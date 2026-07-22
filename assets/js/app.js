@@ -411,10 +411,10 @@ function countPill(label, value) {
   return `<div class="count-pill"><strong>${Number(value || 0).toLocaleString()}</strong><span>${escapeHtml(label)}</span></div>`;
 }
 
-function homeCategoryTile(category, index) {
-  return `<a class="showcase-tile tone-${index % 6}" href="${route(`/resources/${category.id}/`)}">
-    <span>${escapeHtml(category.name)}</span>
-    <small>${escapeHtml(category.description)}</small>
+function homeCategoryTile(category) {
+  return `<a class="showcase-tile" href="${route(`/resources/${category.id}/`)}">
+    <span class="showcase-dot">${escapeHtml(category.name.slice(0, 1).toUpperCase())}</span>
+    <span><strong>${escapeHtml(category.name)}</strong><small>${escapeHtml(category.description)}</small></span>
   </a>`;
 }
 
@@ -427,9 +427,8 @@ function heroShowcase(state) {
     </div>`;
   }
   return `<div class="hero-showcase-card">
-    <div class="showcase-top"><span>Catalog shelves</span><a href="${route("/resources/")}">Open marketplace</a></div>
-    <div class="showcase-grid">${CONFIG.categories.slice(0, 6).map(homeCategoryTile).join("")}</div>
-    <div class="release-note"><strong>Awaiting first release</strong><span>Admins can publish official IconRealms resources from the protected admin panel.</span></div>
+    <div class="showcase-top"><span>Catalog preview</span><a href="${route("/resources/")}">Open marketplace</a></div>
+    <div class="showcase-grid">${CONFIG.categories.slice(0, 4).map(homeCategoryTile).join("")}</div>
   </div>`;
 }
 
