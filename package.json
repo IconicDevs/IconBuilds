@@ -4,7 +4,7 @@
   "private": true,
   "description": "IconBuilds resource marketplace for IconRealms resources.",
   "scripts": {
-    "check": "node -c api/index.js && node -c assets/js/app.js && node -c config.js && node -c dev-server.js && node -c scripts/smoke-test.js",
+    "check": "node scripts/check-api.js && node -c assets/js/app.js && node -c config.js && node -c dev-server.js && node -c scripts/smoke-test.js",
     "smoke": "node scripts/smoke-test.js",
     "static": "node dev-server.js"
   },

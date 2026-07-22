@@ -47,8 +47,9 @@ function route(path = "/") {
 
 function apiUrl(action, params = {}) {
   const base = (CONFIG.api.productionBasePath || CONFIG.api.basePath || "/api").replace(/\/+$/, "");
-  const search = new URLSearchParams({ action, ...params });
-  return `${base}${base.includes("?") ? "&" : "?"}${search.toString()}`;
+  const search = new URLSearchParams(params);
+  const endpoint = `${base}/${encodeURIComponent(action)}`;
+  return `${endpoint}${search.toString() ? `?${search.toString()}` : ""}`;
 }
 
 function authHeaders() {
@@ -82,7 +83,7 @@ async function request(action, payload = {}, method = "POST") {
     try {
       json = text ? JSON.parse(text) : {};
     } catch {
-      const error = new Error(`The API did not return JSON (${response.status}). Check that the Vercel API route is deployed.`);
+      const error = new Error(`The API did not return JSON (${response.status}) from ${url}. Check that this domain is deployed on Vercel, not GitHub Pages.`);
       error.status = response.status;
       throw error;
     }

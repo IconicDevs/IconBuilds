@@ -63,6 +63,15 @@ function getUrl(req) {
   return new URL(req.url || "/", getOrigin(req));
 }
 
+function actionFromPath(url) {
+  const parts = url.pathname.split("/").filter(Boolean);
+  if (parts[0] !== "api") return "";
+  const action = parts[1] || "";
+  if (!action || action === "index") return "";
+  if (action === "stripe-webhook") return "stripeWebhook";
+  return action;
+}
+
 function randomId(prefix = "") {
   return `${prefix}${crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString("hex")}`;
 }
@@ -1399,6 +1408,7 @@ async function handler(req, res) {
   try {
     const url = getUrl(req);
     const action = url.searchParams.get("action")
+      || actionFromPath(url)
       || (url.pathname.includes("sitemap.xml") ? "sitemap" : "")
       || (url.pathname.includes("/resources/") ? "resourcePage" : "");
     if (req.method === "OPTIONS") return sendText(res, 204, "");
