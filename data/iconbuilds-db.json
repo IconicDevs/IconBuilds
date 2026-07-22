@@ -18,7 +18,72 @@
       "updatedAt": "2026-07-22T11:20:05.021Z"
     }
   ],
-  "resources": [],
+  "resources": [
+    {
+      "id": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
+      "name": "DupeCore",
+      "slug": "dupecore",
+      "shortDescription": "A all in one dupe skript! Item blacklisting, and lifesteal!",
+      "description": "DupeCore & Lifesteal Skript – Ultimate Duplication & PvP System\n\n\nTake your server to the next level with DupeCore, the all-in-one Duplication and Lifesteal system! This Skript is designed for serious Minecraft servers looking to add advanced item duplication mechanics without breaking the game balance, alongside a toggleable PvP lifesteal system for competitive gameplay.\n\n\nFeatures:\n\n\nSafe Duplication System: Duplicate any item in your hand with /dupe [amount]. Fully compatible with all standard Minecraft items and shulker boxes. Blacklist support prevents overpowered or rare items from being duplicated.\nShulker Box Safety: Any shulker box, regardless of color, is checked for blacklisted items to stop hidden exploits.\nCooldown Management: Prevents spamming with fully configurable cooldowns via /dupecooldown.\nLifesteal PvP: Toggle lifesteal on or off with {@lifesteal-enabled}. Kill another player to gain hearts and subtract them from your target, with a max of 20 hearts.\nHeart Economy: Players can withdraw hearts as red dye items with /withdraw and redeem them by right-clicking. Hearts cannot be duplicated or abused.\nAdmin Tools: /dupeblacklist to manage restricted items\n\nWhy choose DupeCore?\nThis Skript is professional, secure, and ready for monetization. Perfect for servers that want a fun but balanced duplication system combined with engaging PvP mechanics. Safe, easy to use, and fully configurable.",
+      "category": "skripts",
+      "tags": [
+        "skript",
+        "lifesteal",
+        "dupe"
+      ],
+      "free": false,
+      "priceCents": 500,
+      "currency": "usd",
+      "ownershipLabel": "IconRealms",
+      "coverImage": "https://i.imgur.com/TGDilsM.png",
+      "showcaseImages": [],
+      "youtubeUrl": "https://www.youtube.com/watch?v=XLb9ZdyT7vs",
+      "fileUrl": "https://drive.google.com/uc?export=download&id=1gCMqOsy7oF-u5hkpc-unnD4O6iFVDFil",
+      "currentVersion": "1.0.0",
+      "dependencies": [
+        {
+          "name": "Skbee",
+          "description": "",
+          "required": true,
+          "url": "",
+          "version": ""
+        },
+        {
+          "name": "Skquery",
+          "description": "",
+          "required": true,
+          "url": "",
+          "version": ""
+        }
+      ],
+      "updates": [],
+      "minecraftVersions": [
+        "1.21.1"
+      ],
+      "serverSoftware": [
+        "Paper"
+      ],
+      "compatibility": [
+        "Java"
+      ],
+      "installation": "",
+      "supportInfo": "",
+      "notices": "",
+      "featured": true,
+      "status": "draft",
+      "seoTitle": "DupeCore | IconBuilds",
+      "seoDescription": "A all in one dupe skript! Item blacklisting, and lifesteal!",
+      "canonicalUrl": "https://minestore.org/resources/dupecore/",
+      "imageAlt": "DupeCore resource preview",
+      "updatedAt": "2026-07-22T11:51:54.065Z",
+      "createdAt": "2026-07-22T11:51:54.065Z",
+      "publishedAt": "",
+      "averageRating": 0,
+      "reviewCount": 0,
+      "downloadCount": 0,
+      "purchaseCount": 0
+    }
+  ],
   "reviews": [],
   "purchases": [],
   "downloads": [],
@@ -37,6 +102,13 @@
       "type": "verify-email",
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "createdAt": "2026-07-22T11:20:05.021Z"
+    },
+    {
+      "id": "audit_7a234ddc-263a-4463-a93a-1d0032276c14",
+      "type": "save-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
+      "createdAt": "2026-07-22T11:51:54.065Z"
     }
   ],
   "verificationChallenges": [
