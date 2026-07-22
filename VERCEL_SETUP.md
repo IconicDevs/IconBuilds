@@ -7,7 +7,7 @@ The live domain is currently serving from GitHub Pages. GitHub Pages cannot run 
 Open:
 
 ```text
-https://minestore.org/api/health
+https://minestore.org/api?action=health
 ```
 
 Good response:
@@ -17,6 +17,14 @@ Good response:
 ```
 
 If you see a 404 page, 405 page, or any HTML, the site is not being served by Vercel functions.
+
+This project intentionally uses one serverless function only:
+
+```text
+api/index.js
+```
+
+That keeps it under the Vercel Hobby limit.
 
 ## Vercel Project Settings
 

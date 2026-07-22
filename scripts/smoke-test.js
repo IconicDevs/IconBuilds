@@ -74,17 +74,17 @@ async function verifyLatest(token, userId) {
   const db = await readDb();
   const challenge = [...db.verificationChallenges].reverse().find((item) => item.userId === userId && !item.usedAt);
   assert(challenge?.devCode, "verification dev code should exist in test mode");
-  const res = await call("POST", "/api/verifyEmail", { code: challenge.devCode }, token);
+  const res = await call("POST", "/api?action=verifyEmail", { code: challenge.devCode }, token);
   assert.strictEqual(res.statusCode, 200, res.body);
   return res.json;
 }
 
 async function run() {
-  const empty = await call("GET", "/api/state");
+  const empty = await call("GET", "/api?action=state");
   assert.strictEqual(empty.statusCode, 200);
   assert.deepStrictEqual(empty.json.resources, []);
 
-  const adminRegister = await call("POST", "/api/register", {
+  const adminRegister = await call("POST", "/api?action=register", {
     username: "TheStickBoy",
     email: "admin@iconrealms.net",
     password: "password123",
@@ -95,10 +95,10 @@ async function run() {
   const adminVerified = await verifyLatest(adminRegister.json.token, adminRegister.json.user.id);
   assert.strictEqual(adminVerified.user.role, "admin");
 
-  const blockedAdmin = await call("POST", "/api/admin", { command: "saveResource", resource: {} });
+  const blockedAdmin = await call("POST", "/api?action=admin", { command: "saveResource", resource: {} });
   assert.strictEqual(blockedAdmin.statusCode, 401);
 
-  const save = await call("POST", "/api/admin", {
+  const save = await call("POST", "/api?action=admin", {
     command: "saveResource",
     resource: {
       name: "Icon Test Resource",
@@ -122,7 +122,7 @@ async function run() {
   assert(resource, "published resource should exist in admin state");
   assert(resource.fileUrl, "admins can see protected file URL");
 
-  const publicState = await call("GET", "/api/state");
+  const publicState = await call("GET", "/api?action=state");
   assert.strictEqual(publicState.statusCode, 200);
   const publicResource = publicState.json.resources.find((item) => item.slug === "icon-test-resource");
   assert(publicResource, "public state should show published resource");
@@ -137,20 +137,20 @@ async function run() {
   assert(sitemap.body.includes("https://minestore.org/resources/icon-test-resource/"));
   assert(!sitemap.body.includes("/admin/"));
 
-  const userRegister = await call("POST", "/api/register", {
+  const userRegister = await call("POST", "/api?action=register", {
     username: "Buyer",
     email: "buyer@example.com",
     password: "password123",
     termsAccepted: true
   });
   const userVerified = await verifyLatest(userRegister.json.token, userRegister.json.user.id);
-  const addFree = await call("POST", "/api/addFreeResource", { resourceId: resource.id, acceptedTerms: true }, userVerified.token);
+  const addFree = await call("POST", "/api?action=addFreeResource", { resourceId: resource.id, acceptedTerms: true }, userVerified.token);
   assert.strictEqual(addFree.statusCode, 200, addFree.body);
-  const download = await call("POST", "/api/download", { resourceId: resource.id }, userVerified.token);
+  const download = await call("POST", "/api?action=download", { resourceId: resource.id }, userVerified.token);
   assert.strictEqual(download.statusCode, 200, download.body);
   assert(download.json.downloadUrl.includes("downloadFile"));
 
-  const del = await call("POST", "/api/admin", { command: "deleteResource", id: resource.id }, adminVerified.token);
+  const del = await call("POST", "/api?action=admin", { command: "deleteResource", id: resource.id }, adminVerified.token);
   assert.strictEqual(del.statusCode, 200, del.body);
   assert(!del.json.resources.some((item) => item.id === resource.id));
 
