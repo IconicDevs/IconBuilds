@@ -25,7 +25,7 @@
       border: "rgba(148, 163, 184, .22)",
       text: "#f8fbff",
       muted: "#9fb0c5",
-      blue: "#E6E6FA",
+      blue: "#734f96",
       cyan: "#F3E8FF",
       emerald: "#C9B6FF",
       violet: "#B9A7FF",
