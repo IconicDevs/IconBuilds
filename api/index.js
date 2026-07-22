@@ -699,7 +699,7 @@ function sanitizeResource(input, db) {
     status,
     seoTitle: `${name} | IconBuilds`.slice(0, 70),
     seoDescription: (shortDescription || description.replace(/[#*_`>[\]()!-]/g, " ").replace(/\s+/g, " ").trim()).slice(0, 170),
-    canonicalUrl: `${CONFIG.site.url}/resources/${slug}/`,
+    canonicalUrl: `${CONFIG.site.url}/resources/?slug=${encodeURIComponent(slug)}`,
     imageAlt: `${name} resource preview`.slice(0, 180),
     updatedAt: now(),
     createdAt: existing.createdAt || now(),
@@ -1372,7 +1372,7 @@ function sitemapXml(db) {
     ["guidelines/", "monthly", "0.3"],
     ["support/", "monthly", "0.4"],
     ...CONFIG.categories.map((cat) => [`resources/${cat.id}/`, "weekly", "0.7"]),
-    ...db.resources.filter((item) => item.status === "published").map((item) => [`resources/${item.slug}/`, "weekly", "0.8", item.updatedAt])
+    ...db.resources.filter((item) => item.status === "published").map((item) => [`resources/?slug=${encodeURIComponent(item.slug || item.id)}`, "weekly", "0.8", item.updatedAt])
   ];
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([loc, changefreq, priority, lastmod]) => `  <url>\n    <loc>${xmlEscape(`${CONFIG.site.url}/${loc}`)}</loc>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>${lastmod ? `\n    <lastmod>${xmlEscape(new Date(lastmod).toISOString())}</lastmod>` : ""}\n  </url>`).join("\n")}\n</urlset>\n`;
 }
@@ -1407,7 +1407,7 @@ function categoryPageHtml(category) {
 function resourcePageHtml(resource) {
   const title = resource.seoTitle || `${resource.name} | IconBuilds Resource`;
   const description = (resource.seoDescription || resource.shortDescription || stripHtml(resource.description) || CONFIG.seo.description).slice(0, 160);
-  const canonical = `${CONFIG.site.url}/resources/${resource.slug}/`;
+  const canonical = `${CONFIG.site.url}/resources/?slug=${encodeURIComponent(resource.slug || resource.id)}`;
   const schema = structuredData(resource);
   const images = [resource.coverImage, ...(resource.showcaseImages || [])].filter(Boolean);
   return pageShell("resource", title, description, canonical, `

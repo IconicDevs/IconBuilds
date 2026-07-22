@@ -24,7 +24,7 @@ function cleanPath(urlPath) {
 
 async function serveStatic(req, res) {
   const url = new URL(req.url, `http://${req.headers.host || `localhost:${port}`}`);
-  if (url.pathname.startsWith("/api") || url.pathname === "/sitemap.xml" || /^\/resources\/[^/]+\/?$/.test(url.pathname)) {
+  if (url.pathname.startsWith("/api") || /^\/resources\/[^/]+\/?$/.test(url.pathname)) {
     return api(req, res);
   }
   let filePath = path.join(root, cleanPath(url.pathname));

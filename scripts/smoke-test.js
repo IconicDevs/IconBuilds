@@ -84,6 +84,21 @@ async function verifyLatest(token, userId) {
 }
 
 async function run() {
+  await fs.writeFile(tmp, JSON.stringify({
+    version: 1,
+    users: [],
+    resources: [],
+    reviews: [],
+    purchases: [],
+    downloads: [],
+    library: [],
+    favorites: [],
+    reports: [],
+    auditLogs: [],
+    verificationChallenges: [],
+    passwordResets: []
+  }, null, 2));
+
   const empty = await call("GET", "/api?action=state");
   assert.strictEqual(empty.statusCode, 200);
   assert.deepStrictEqual(empty.json.resources, []);
@@ -170,7 +185,7 @@ async function run() {
 
   const sitemap = await call("GET", "/sitemap.xml");
   assert.strictEqual(sitemap.statusCode, 200);
-  assert(sitemap.body.includes("https://minestore.org/resources/icon-test-resource/"));
+  assert(sitemap.body.includes("https://minestore.org/resources/?slug=icon-test-resource"));
   assert(!sitemap.body.includes("/admin/"));
 
   const userRegister = await call("POST", "/api?action=register", {
