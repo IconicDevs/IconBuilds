@@ -1,6 +1,23 @@
 {
   "version": 1,
-  "users": [],
+  "users": [
+    {
+      "id": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "username": "ItzKuroYT",
+      "email": "isaaccooper926@gmail.com",
+      "passwordHash": "98c2f49a64b3aba9ce4a1cb80973aea3:e15c542447f4cd00db16df5a6b2de83b7fc127c6f246f41eb9050e8b64e4de2566432d4f048aa90c2d70af1456ff2f43d025ea9495a2f12990ee8f84e531987d",
+      "role": "admin",
+      "roles": [
+        "admin"
+      ],
+      "emailVerified": false,
+      "emailOptIn": true,
+      "googleId": "",
+      "avatarUrl": "",
+      "createdAt": "2026-07-22T11:19:43.934Z",
+      "updatedAt": "2026-07-22T11:19:43.934Z"
+    }
+  ],
   "resources": [],
   "reviews": [],
   "purchases": [],
@@ -8,7 +25,25 @@
   "library": [],
   "favorites": [],
   "reports": [],
-  "auditLogs": [],
-  "verificationChallenges": [],
+  "auditLogs": [
+    {
+      "id": "audit_a72ae3d4-33e9-4719-81e6-c8883c4b1b52",
+      "type": "register",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "createdAt": "2026-07-22T11:19:44.120Z"
+    }
+  ],
+  "verificationChallenges": [
+    {
+      "id": "ver_fc43b739-4835-4095-9329-924db05649d7",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "email": "isaaccooper926@gmail.com",
+      "codeHash": "c04f16ea63280187627b37eefcf48017:342645e36a9e4f3dff39268546eca356868105e65a37da443501a8412f6f939bd6eefc0d867fe419c9d2131242e0706bc6bbefd5886100a11decb5220d74c119",
+      "createdAt": "2026-07-22T11:19:44.010Z",
+      "expiresAt": "2026-07-22T11:49:44.010Z",
+      "lastSentAt": "2026-07-22T11:19:44.010Z",
+      "usedAt": ""
+    }
+  ],
   "passwordResets": []
 }
