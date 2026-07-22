@@ -211,28 +211,19 @@ function layout(state, content) {
   const user = state.user || store.session?.user || null;
   document.body.innerHTML = `<div class="site-shell">
     <header class="topbar">
-      <div class="utility-bar">
-        <div class="utility-inner">
-          <span>Official IconRealms marketplace</span>
-          <a href="${route("/resources/")}">Browse resources</a>
-        </div>
-      </div>
       <nav class="nav">
         <a class="brand" href="${route("/")}"><span class="brand-mark">IB</span><span>${escapeHtml(CONFIG.site.name)}</span></a>
-        <form class="nav-search" id="navSearch">
-          <input name="q" placeholder="Search resources">
-          <button type="submit">Search</button>
-        </form>
         <button class="nav-button mobile-toggle" type="button" aria-label="Open menu">Menu</button>
         <div class="nav-links">
-          ${navLink("/", "Home")}
           ${navLink("/resources/", "Resources")}
           ${navLink("/free/", "Free")}
           ${navLink("/premium/", "Premium")}
           ${navLink("/support/", "Support")}
-          ${user ? navLink("/account/", "Account") : navLink("/login/", "Login")}
           ${isAdmin(user) ? navLink("/admin/", "Admin") : ""}
-          ${user ? `<button class="nav-button" id="logoutButton" type="button">Logout</button>` : `<a class="nav-button primary" href="${route("/signup/")}">Create account</a>`}
+        </div>
+        <div class="nav-actions">
+          ${user ? navLink("/account/", "Account") : navLink("/login/", "Log in")}
+          ${user ? `<button class="nav-button" id="logoutButton" type="button">Logout</button>` : `<a class="nav-button primary" href="${route("/signup/")}">Register</a>`}
         </div>
       </nav>
       <div class="category-rail">
@@ -250,11 +241,6 @@ function layout(state, content) {
     </footer>
   </div>`;
   $(".mobile-toggle")?.addEventListener("click", () => $(".nav-links")?.classList.toggle("open"));
-  $("#navSearch")?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const q = clean(new FormData(event.currentTarget).get("q"));
-    location.href = route(`/resources/${q ? `?q=${encodeURIComponent(q)}` : ""}`);
-  });
   $("#logoutButton")?.addEventListener("click", () => {
     store.session = null;
     location.href = route("/");
@@ -273,28 +259,35 @@ function renderHome(state) {
   const paid = sortResources(publicResources(state, { kind: "premium" })).slice(0, 3);
   const recommended = recommendations(state, published).slice(0, 4);
   const counts = marketplaceCounts(state);
-  layout(state, `<section class="hero">
-    <div class="hero-content">
-      <p class="eyebrow">${escapeHtml(CONFIG.copy.heroEyebrow)}</p>
-      <h1>${escapeHtml(CONFIG.copy.heroTitle)}</h1>
-      <p>${escapeHtml(CONFIG.copy.heroBody)}</p>
-      <form class="search-hero" id="homeSearch">
-        <input id="homeSearchInput" placeholder="${escapeHtml(CONFIG.copy.searchPlaceholder)}">
-        <button class="button primary" type="submit">Search</button>
-      </form>
-      ${categoryShelf()}
-      <div class="hero-actions">
-        <a class="button primary" href="${route("/resources/")}">Browse Resources</a>
-        <a class="button" href="${route("/free/")}">Free Resources</a>
+  layout(state, `<section class="marketplace-hero">
+    <div class="marketplace-banner">
+      <div class="banner-copy">
+        <p class="eyebrow">${escapeHtml(CONFIG.copy.heroEyebrow)}</p>
+        <h1>${escapeHtml(CONFIG.copy.heroTitle)}</h1>
+        <p>${escapeHtml(CONFIG.copy.heroBody)}</p>
+        <div class="banner-metrics">
+          ${heroMetric("Published", counts.published)}
+          ${heroMetric("Free", counts.free)}
+          ${heroMetric("Premium", counts.premium)}
+          ${heroMetric("Categories", counts.categories)}
+        </div>
+        <form class="market-search" id="homeSearch">
+          <input id="homeSearchInput" placeholder="${escapeHtml(CONFIG.copy.searchPlaceholder)}">
+          <select id="homeCategorySelect" aria-label="Resource category">
+            <option value="">All categories</option>
+            ${CONFIG.categories.map((category) => `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`).join("")}
+          </select>
+          <button type="submit">Search</button>
+        </form>
+        <div class="popular-searches">
+          <strong>Popular searches:</strong>
+          ${CONFIG.categories.slice(0, 8).map((category) => `<a href="${route(`/resources/${category.id}/`)}">${escapeHtml(category.name)}</a>`).join("")}
+        </div>
       </div>
-      <div class="count-row">
-        ${countPill("published", counts.published)}
-        ${countPill("free", counts.free)}
-        ${countPill("premium", counts.premium)}
-        ${countPill("categories", counts.categories)}
+      <div class="category-showcase">
+        ${CONFIG.categories.slice(0, 6).map(categoryPoster).join("")}
       </div>
     </div>
-    <div class="hero-art">${heroShowcase(state)}</div>
   </section>
   ${sectionResources(CONFIG.copy.recommendedTitle, recommended, CONFIG.copy.recommendedFallback, "/resources/")}
   ${sectionResources(CONFIG.copy.freeTitle, free, "Free resources will appear here after an admin publishes them.", "/free/")}
@@ -315,7 +308,11 @@ function renderHome(state) {
   $("#homeSearch")?.addEventListener("submit", (event) => {
     event.preventDefault();
     const q = clean($("#homeSearchInput").value);
-    location.href = route(`/resources/${q ? `?q=${encodeURIComponent(q)}` : ""}`);
+    const category = clean($("#homeCategorySelect")?.value || "");
+    const next = new URLSearchParams();
+    if (q) next.set("q", q);
+    if (category) next.set("category", category);
+    location.href = route(`/resources/${next.toString() ? `?${next.toString()}` : ""}`);
   });
 }
 
@@ -411,36 +408,15 @@ function countPill(label, value) {
   return `<div class="count-pill"><strong>${Number(value || 0).toLocaleString()}</strong><span>${escapeHtml(label)}</span></div>`;
 }
 
-function homeCategoryTile(category) {
-  return `<a class="showcase-tile" href="${route(`/resources/${category.id}/`)}">
-    <span class="showcase-dot">${escapeHtml(category.name.slice(0, 1).toUpperCase())}</span>
-    <span><strong>${escapeHtml(category.name)}</strong><small>${escapeHtml(category.description)}</small></span>
+function heroMetric(label, value) {
+  return `<span><strong>${Number(value || 0).toLocaleString()}</strong> ${escapeHtml(label)}</span>`;
+}
+
+function categoryPoster(category) {
+  return `<a class="category-poster" href="${route(`/resources/${category.id}/`)}">
+    <span class="poster-shade"></span>
+    <span class="poster-label">${escapeHtml(category.name)}</span>
   </a>`;
-}
-
-function heroShowcase(state) {
-  const resources = sortResources(publicResources(state)).slice(0, 3);
-  if (resources.length) {
-    return `<div class="hero-showcase-card">
-      <div class="showcase-top"><span>Featured shelf</span><a href="${route("/resources/")}">View all</a></div>
-      <div class="showcase-stack">${resources.map((resource) => resourceMiniRow(resource)).join("")}</div>
-    </div>`;
-  }
-  return `<div class="hero-showcase-card">
-    <div class="showcase-top"><span>Catalog preview</span><a href="${route("/resources/")}">Open marketplace</a></div>
-    <div class="showcase-grid">${CONFIG.categories.slice(0, 4).map(homeCategoryTile).join("")}</div>
-  </div>`;
-}
-
-function resourceMiniRow(resource) {
-  return `<a class="resource-mini" href="${resourceUrl(resource)}">
-    <span class="mini-cover">${initials(resource.name)}</span>
-    <span><strong>${escapeHtml(resource.name)}</strong><small>${escapeHtml(categoryById(resource.category).name)} - ${escapeHtml(priceLabel(resource))}</small></span>
-  </a>`;
-}
-
-function categoryShelf() {
-  return `<div class="category-shelf">${CONFIG.categories.slice(0, 6).map((category) => `<a class="chip" href="${route(`/resources/${category.id}/`)}">${escapeHtml(category.name)}</a>`).join("")}</div>`;
 }
 
 function renderMarketplace(state, kind = "") {

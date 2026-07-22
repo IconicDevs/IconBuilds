@@ -53,10 +53,10 @@
   },
   copy: {
     heroEyebrow: "Minecraft Resource Marketplace",
-    heroTitle: "Official Minecraft Resources by IconRealms",
+    heroTitle: "Find the best resources for your Minecraft server",
     heroBody:
-      "Browse plugins, builds, Skripts, server setups, graphics, textures, models, and Discord resources released by the IconRealms team.",
-    searchPlaceholder: "Search plugins, builds, setups, graphics, Discord resources",
+      "Browse official IconRealms plugins, builds, setups, graphics, textures, models, Skripts, and Discord resources.",
+    searchPlaceholder: "Search resources...",
     recommendedTitle: "Recommended for You",
     recommendedFallback: "Official drops will appear here after an administrator publishes the first resources.",
     freeTitle: "Free Resources",

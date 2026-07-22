@@ -1339,9 +1339,9 @@ function pageShell(page, title, description, canonical, body) {
   <meta property="og:description" content="${htmlEscape(description)}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="${htmlEscape(canonical)}">
-  <link rel="stylesheet" href="/assets/css/styles.css">
+  <link rel="stylesheet" href="/assets/css/styles.css?v=marketplace-20260722">
   <script src="/config.js" defer></script>
-  <script src="/assets/js/app.js" defer></script>
+  <script src="/assets/js/app.js?v=marketplace-20260722" defer></script>
 </head>
 <body data-page="${page}">${body}</body>
 </html>`;
