@@ -13,7 +13,7 @@ process.env.NODE_ENV = "test";
 
 const api = require("../api/index.js");
 
-function makeReq(method, url, body, token) {
+function makeReq(method, url, body, token, headers = {}) {
   const raw = body ? Buffer.from(JSON.stringify(body)) : Buffer.alloc(0);
   const req = Readable.from(raw.length ? [raw] : []);
   req.method = method;
@@ -21,7 +21,8 @@ function makeReq(method, url, body, token) {
   req.headers = {
     host: "localhost:4177",
     "x-forwarded-proto": "http",
-    "content-type": "application/json"
+    "content-type": "application/json",
+    ...headers
   };
   if (token) req.headers.authorization = `Bearer ${token}`;
   req.socket = { remoteAddress: "127.0.0.1" };
@@ -33,9 +34,12 @@ function makeRes() {
     statusCode: 200,
     headers: {},
     body: "",
+    setHeader(key, value) {
+      this.headers[key] = value;
+    },
     writeHead(status, headers) {
       this.statusCode = status;
-      this.headers = headers || {};
+      this.headers = { ...this.headers, ...(headers || {}) };
     },
     end(chunk = "") {
       this.body += chunk;
@@ -49,8 +53,8 @@ function makeRes() {
   };
 }
 
-async function call(method, url, body, token) {
-  const req = makeReq(method, url, body, token);
+async function call(method, url, body, token, headers = {}) {
+  const req = makeReq(method, url, body, token, headers);
   const res = makeRes();
   const done = res.wait();
   await api(req, res);
@@ -83,6 +87,21 @@ async function run() {
   const empty = await call("GET", "/api?action=state");
   assert.strictEqual(empty.statusCode, 200);
   assert.deepStrictEqual(empty.json.resources, []);
+
+  const preflight = await call("OPTIONS", "/api?action=register", null, "", {
+    origin: "https://minestore.org",
+    "access-control-request-method": "POST"
+  });
+  assert.strictEqual(preflight.statusCode, 204);
+  assert.strictEqual(preflight.headers["Access-Control-Allow-Origin"], "https://minestore.org");
+
+  const blockedOrigin = await call("POST", "/api?action=register", {
+    username: "BlockedOrigin",
+    email: "blocked-origin@example.com",
+    password: "password123",
+    termsAccepted: true
+  }, "", { origin: "https://evil.example" });
+  assert.strictEqual(blockedOrigin.statusCode, 403);
 
   const adminRegister = await call("POST", "/api?action=register", {
     username: "TheStickBoy",

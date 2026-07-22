@@ -13,7 +13,7 @@ const IconBuildsConfig = {
   },
   api: {
     basePath: "/api",
-    productionBasePath: "/api",
+    productionBasePath: "https://icon-builds.vercel.app/api",
     requestTimeoutMs: 25000
   },
   theme: {

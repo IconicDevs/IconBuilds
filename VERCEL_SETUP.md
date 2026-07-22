@@ -1,13 +1,28 @@
-# IconBuilds Vercel Setup
+# IconBuilds GitHub Pages + Vercel Setup
 
-The live domain is currently serving from GitHub Pages. GitHub Pages cannot run `api/*.js`, so signup will fail until `minestore.org` points to the Vercel deployment.
+`minestore.org` is the static website on GitHub Pages. GitHub Pages cannot run `api/*.js`, so the browser must call the Vercel API endpoint instead of `/api` on `minestore.org`.
+
+This project intentionally uses one Vercel serverless function only:
+
+```text
+api/index.js
+```
+
+That keeps the deployment under the Vercel Hobby function limit.
+
+## Required Split
+
+- GitHub Pages hosts the HTML, CSS, JS, images, and static pages.
+- Vercel hosts the API at `https://icon-builds.vercel.app/api`.
+- `config.js` must keep `api.productionBasePath` set to `https://icon-builds.vercel.app/api`.
+- Do not test auth with `https://minestore.org/api?action=health`; that is GitHub Pages and should not be the API.
 
 ## Test The API
 
-Open:
+Open this Vercel URL:
 
 ```text
-https://minestore.org/api?action=health
+https://icon-builds.vercel.app/api?action=health
 ```
 
 Good response:
@@ -16,15 +31,7 @@ Good response:
 {"ok":true,"site":"IconBuilds","time":"..."}
 ```
 
-If you see a 404 page, 405 page, or any HTML, the site is not being served by Vercel functions.
-
-This project intentionally uses one serverless function only:
-
-```text
-api/index.js
-```
-
-That keeps it under the Vercel Hobby limit.
+If that returns HTML, 404, or 405, the Vercel deployment is not using this project root or `api/index.js` is not deployed.
 
 ## Vercel Project Settings
 
@@ -34,28 +41,7 @@ That keeps it under the Vercel Hobby limit.
 - Output Directory: leave empty
 - Install Command: leave empty or `npm install`
 
-## DNS
-
-In Vercel, add `minestore.org` to the IconBuilds project. Then point the apex/root domain to Vercel.
-
-Use Vercel's shown DNS records. The usual apex record is:
-
-```text
-Type: A
-Name: @
-Value: 76.76.21.21
-```
-
-Remove GitHub Pages apex records while doing this. GitHub Pages commonly uses these IPs:
-
-```text
-185.199.108.153
-185.199.109.153
-185.199.110.153
-185.199.111.153
-```
-
-## Required Env Vars
+## Required Env Vars On Vercel
 
 ```text
 SESSION_SECRET=replace-with-a-long-random-secret
@@ -63,28 +49,47 @@ ADMIN_EMAILS=thestickboy@example.com,itzkuroyt@example.com
 ALLOWED_ORIGINS=https://minestore.org,https://icon-builds.vercel.app
 ```
 
+Use the real admin email addresses for `ADMIN_EMAILS`. Usernames alone are not secure enough.
+
 ## Email Verification
 
 ```text
-RESEND_API_KEY=
+RESEND_API_KEY=re_...
 RESEND_FROM_EMAIL=IconBuilds <verify@minestore.org>
 ```
 
-## GitHub Storage
+The `RESEND_FROM_EMAIL` domain must be verified in Resend, or use a sender Resend has already verified.
+
+## Google OAuth
 
 ```text
-GITHUB_TOKEN=
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+```
+
+In Google Cloud, add this authorized redirect URI exactly:
+
+```text
+https://icon-builds.vercel.app/api/google-callback
+```
+
+The API will finish Google login on Vercel, then return the session to `https://minestore.org`.
+
+## GitHub Storage Backup
+
+```text
+GITHUB_TOKEN=github_pat_...
 GITHUB_REPO=owner/repo-name
 GITHUB_BRANCH=main
 GITHUB_DB_PATH=data/iconbuilds-db.json
 GITHUB_DB_BACKUP_PATH=data/iconbuilds-db.backup.json
 ```
 
-## Optional
+The token should only have contents read/write permission for the repo that stores the backup JSON. Do not put secrets in GitHub Pages, `config.js`, or frontend files.
+
+## Optional Payments
 
 ```text
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-STRIPE_SECRET_KEY=
-STRIPE_WEBHOOK_SECRET=
+STRIPE_SECRET_KEY=sk_...
+STRIPE_WEBHOOK_SECRET=whsec_...
 ```

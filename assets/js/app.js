@@ -45,8 +45,17 @@ function route(path = "/") {
   return `${base}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
+function apiBasePaths() {
+  const productionBase = clean(CONFIG.api.productionBasePath || "").replace(/\/+$/, "");
+  const sameOriginBase = clean(CONFIG.api.basePath || "/api").replace(/\/+$/, "");
+  const localHosts = new Set(["", "localhost", "127.0.0.1", "::1"]);
+  const isLocal = location.protocol === "file:" || localHosts.has(location.hostname);
+  const bases = isLocal ? [sameOriginBase, productionBase] : [productionBase || sameOriginBase];
+  return [...new Set(bases.filter(Boolean))];
+}
+
 function apiUrl(action, params = {}) {
-  const base = (CONFIG.api.productionBasePath || CONFIG.api.basePath || "/api").replace(/\/+$/, "");
+  const base = apiBasePaths()[0] || "/api";
   const search = new URLSearchParams({ action, ...params });
   return `${base}${base.includes("?") ? "&" : "?"}${search.toString()}`;
 }
@@ -75,23 +84,43 @@ async function request(action, payload = {}, method = "POST") {
       cache: "no-store"
     };
     if (method !== "GET") options.body = JSON.stringify(payload);
-    const url = method === "GET" ? apiUrl(action, payload) : apiUrl(action);
-    const response = await fetch(url, options);
-    const text = await response.text();
-    let json = {};
-    try {
-      json = text ? JSON.parse(text) : {};
-    } catch {
-      const error = new Error(`The API did not return JSON (${response.status}) from ${url}. Check that this domain is deployed on Vercel, not GitHub Pages.`);
-      error.status = response.status;
-      throw error;
+    let lastError = null;
+    for (const base of apiBasePaths()) {
+      const search = new URLSearchParams({ action });
+      if (method === "GET") {
+        Object.entries(payload || {}).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") search.set(key, value);
+        });
+      }
+      const url = `${base}${base.includes("?") ? "&" : "?"}${search.toString()}`;
+      try {
+        const response = await fetch(url, options);
+        const text = await response.text();
+        let json = {};
+        try {
+          json = text ? JSON.parse(text) : {};
+        } catch {
+          const sameOriginApi = url.startsWith(`${location.origin}/api`) || url.startsWith("/api");
+          const hint = sameOriginApi
+            ? `The static GitHub Pages site tried ${url}. Set config.api.productionBasePath to the Vercel endpoint, for example https://icon-builds.vercel.app/api.`
+            : `The Vercel API at ${url} did not return JSON. Check that api/index.js is deployed.`;
+          const error = new Error(`The API did not return JSON (${response.status}). ${hint}`);
+          error.status = response.status;
+          throw error;
+        }
+        if (!response.ok || json.error) {
+          const error = new Error(json.error || "That action could not be completed.");
+          error.status = response.status;
+          throw error;
+        }
+        return json;
+      } catch (error) {
+        lastError = error;
+        const shouldTryNext = error.name === "AbortError" || /failed to fetch|networkerror|cors|did not return json/i.test(error.message || "");
+        if (!shouldTryNext) throw error;
+      }
     }
-    if (!response.ok || json.error) {
-      const error = new Error(json.error || "That action could not be completed.");
-      error.status = response.status;
-      throw error;
-    }
-    return json;
+    throw lastError || new Error("The IconBuilds API is not configured.");
   } catch (error) {
     if (error.name === "AbortError") throw new Error("Network timeout. Please try again.");
     throw error;
@@ -1042,7 +1071,23 @@ function renderStaticPage(state, key) {
   layout(state, `<section class="section"><div class="panel"><h1 class="section-title">${escapeHtml(title)}</h1><p class="section-copy">${escapeHtml(body)}</p></div></section>`);
 }
 
+function consumeGoogleAuthHash() {
+  const raw = String(location.hash || "").replace(/^#/, "");
+  if (!raw) return null;
+  const params = new URLSearchParams(raw);
+  const token = params.get("googleToken");
+  const error = params.get("googleError");
+  if (!token && !error) return null;
+  history.replaceState(null, document.title, `${location.pathname}${location.search}`);
+  if (token) {
+    store.session = { token, user: null };
+    return { ok: true, message: "Signed in with Google." };
+  }
+  return { ok: false, message: error || "Google sign-in could not be completed. Please try again." };
+}
+
 async function boot() {
+  const googleAuthResult = consumeGoogleAuthHash();
   const page = pageName();
   let state = { user: store.session?.user || null, resources: [], reviews: [], purchases: [], downloads: [], library: [], users: [], stats: {} };
   try {
@@ -1068,6 +1113,7 @@ async function boot() {
   else if (page === "admin") renderAdmin(state);
   else if (page === "checkout-success") renderCheckoutSuccess(state);
   else renderStaticPage(state, page);
+  if (googleAuthResult?.message) toast(googleAuthResult.message);
 }
 
 function stars(value) {

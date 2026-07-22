@@ -31,13 +31,37 @@ function now() {
 }
 
 function send(res, status, payload, headers = {}) {
-  res.writeHead(status, { ...JSON_HEADERS, ...securityHeaders(), ...headers });
+  res.writeHead(status, { ...JSON_HEADERS, ...responseHeaders(res, headers) });
   res.end(JSON.stringify(payload));
 }
 
 function sendText(res, status, body, contentType = "text/plain; charset=utf-8", headers = {}) {
-  res.writeHead(status, { "Content-Type": contentType, ...securityHeaders(), ...headers });
+  res.writeHead(status, { "Content-Type": contentType, ...responseHeaders(res, headers) });
   res.end(body);
+}
+
+function responseHeaders(res, headers = {}) {
+  return { ...(res.__iconBuildsCorsHeaders || {}), ...securityHeaders(), ...headers };
+}
+
+function corsHeaders(req) {
+  const origin = requestOrigin(req);
+  const allowOrigin = allowedOrigins(req).has(origin) ? origin : CONFIG.site.url;
+  return {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-IconBuilds-Token",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Max-Age": "86400",
+    Vary: "Origin"
+  };
+}
+
+function setCorsHeaders(req, res) {
+  const headers = corsHeaders(req);
+  res.__iconBuildsCorsHeaders = headers;
+  if (typeof res.setHeader === "function") {
+    Object.entries(headers).forEach(([key, value]) => res.setHeader(key, value));
+  }
 }
 
 function securityHeaders() {
@@ -63,11 +87,24 @@ function getUrl(req) {
   return new URL(req.url || "/", getOrigin(req));
 }
 
+function requestOrigin(req) {
+  return String(req.headers?.origin || req.headers?.Origin || "").replace(/\/$/, "");
+}
+
+function apiOrigin(value = "") {
+  try {
+    return new URL(value, CONFIG.site.url).origin;
+  } catch {
+    return "";
+  }
+}
+
 function actionFromPath(url) {
   const parts = url.pathname.split("/").filter(Boolean);
   if (parts[0] !== "api") return "";
   const action = parts[1] || "";
   if (!action || action === "index") return "";
+  if (action === "google-callback") return "googleCallback";
   if (action === "stripe-webhook") return "stripeWebhook";
   return action;
 }
@@ -140,14 +177,18 @@ function clearAuthCookie() {
   return "iconBuildsSession=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0";
 }
 
-function allowedOrigins(req) {
+function allowedOrigins(req = { headers: {} }) {
   return new Set([
     CONFIG.site.url,
+    apiOrigin(CONFIG.api?.productionBasePath),
+    apiOrigin(CONFIG.api?.basePath),
     "http://localhost:4177",
     `http://${req.headers.host || ""}`,
     `https://${req.headers.host || ""}`,
     ...String(process.env.ALLOWED_ORIGINS || "").split(",").map((item) => item.trim()).filter(Boolean)
-  ]);
+  ]
+    .map((item) => String(item || "").trim().replace(/\/$/, ""))
+    .filter((item) => item.startsWith("https://") || item.startsWith("http://localhost") || item.startsWith("http://127.0.0.1")));
 }
 
 function validateOrigin(req, action) {
@@ -904,10 +945,29 @@ function verifyTokenLike(value) {
   }
 }
 
+function safeReturnPath(value = "/account/") {
+  const path = String(value || "/account/").trim();
+  if (!path.startsWith("/") || path.startsWith("//") || path.includes("\\") || /[\r\n]/.test(path)) return "/account/";
+  return path;
+}
+
+function googleRedirectUri(req) {
+  return `${getOrigin(req).replace(/\/+$/, "")}/api/google-callback`;
+}
+
+function googleAuthReturnUrl({ token = "", error = "", next = "/account/" } = {}) {
+  const target = new URL(safeReturnPath(token ? next : "/login/"), CONFIG.site.url);
+  const hash = new URLSearchParams();
+  if (token) hash.set("googleToken", token);
+  if (error) hash.set("googleError", error);
+  target.hash = hash.toString();
+  return target.toString();
+}
+
 function handleGoogleStart(req, res, url) {
   if (!process.env.GOOGLE_CLIENT_ID) return error(res, 503, "Google login is not configured.");
-  const redirectUri = `${CONFIG.site.url}/api?action=googleCallback`;
-  const next = url.searchParams.get("next") || "/";
+  const redirectUri = googleRedirectUri(req);
+  const next = safeReturnPath(url.searchParams.get("next") || "/account/");
   const target = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   target.searchParams.set("client_id", process.env.GOOGLE_CLIENT_ID);
   target.searchParams.set("redirect_uri", redirectUri);
@@ -924,7 +984,7 @@ async function handleGoogleCallback(req, res, url) {
   const code = url.searchParams.get("code");
   if (!code) return error(res, 400, "Google did not return a code.");
   const next = verifyGoogleState(url.searchParams.get("state"));
-  const redirectUri = `${CONFIG.site.url}/api?action=googleCallback`;
+  const redirectUri = googleRedirectUri(req);
   const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -984,9 +1044,12 @@ async function handleGoogleCallback(req, res, url) {
     db.auditLogs.push({ id: randomId("audit_"), type: "google-login", userId: user.id, createdAt: now() });
     return session;
   }, "Google IconBuilds login");
-  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/account/";
-  const html = `<!doctype html><meta charset="utf-8"><title>Signing in...</title><script>localStorage.setItem("iconBuildsSession", ${JSON.stringify(JSON.stringify(result.result))}); location.replace(${JSON.stringify(safeNext)});</script><p>Signing in...</p>`;
-  sendText(res, 200, html, "text/html; charset=utf-8", { "Set-Cookie": authCookie(result.result.token) });
+  res.writeHead(302, {
+    Location: googleAuthReturnUrl({ token: result.result.token, next }),
+    ...securityHeaders(),
+    "Set-Cookie": authCookie(result.result.token)
+  });
+  res.end();
 }
 
 async function handleAdmin(req, res, body) {
@@ -1405,6 +1468,7 @@ async function handleResourcePage(req, res, url) {
 }
 
 async function handler(req, res) {
+  setCorsHeaders(req, res);
   try {
     const url = getUrl(req);
     const action = url.searchParams.get("action")
