@@ -1204,3 +1204,75 @@ img {
     min-height: 72px;
   }
 }
+
+.field-help {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: .86rem;
+  line-height: 1.45;
+}
+
+.multi-select {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #0f1623;
+}
+
+.multi-select summary {
+  min-height: 42px;
+  padding: 11px 12px;
+  cursor: pointer;
+  color: var(--text);
+  list-style: none;
+}
+
+.multi-select summary::-webkit-details-marker {
+  display: none;
+}
+
+.multi-select summary::after {
+  content: "?";
+  float: right;
+  color: var(--muted);
+}
+
+.multi-select[open] summary::after {
+  content: "?";
+}
+
+.multi-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 12px;
+  max-height: 230px;
+  overflow: auto;
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--line);
+}
+
+.multi-options .check-row {
+  font-size: .84rem;
+  font-weight: 750;
+}
+
+.admin-subsection {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: rgba(15, 22, 35, .55);
+}
+
+.admin-subsection h3 {
+  margin: 0;
+}
+
+.textarea.compact {
+  min-height: 92px;
+}
+
+.textarea.tall {
+  min-height: 210px;
+}

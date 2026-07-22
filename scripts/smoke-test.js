@@ -141,6 +141,23 @@ async function run() {
   assert(resource, "published resource should exist in admin state");
   assert(resource.fileUrl, "admins can see protected file URL");
 
+  const driveSave = await call("POST", "/api?action=admin", {
+    command: "saveResource",
+    resource: {
+      name: "Drive Download Resource",
+      shortDescription: "A smoke-test resource using a Google Drive source URL.",
+      description: "This verifies Google Drive download links can be used without a visible file extension.",
+      category: "plugins",
+      status: "draft",
+      free: true,
+      fileUrl: "https://drive.google.com/uc?export=download&id=1gCMqOsy7oF-u5hkpc-unnD4O6iFVDFil",
+      ownershipLabel: "IconRealms Development"
+    }
+  }, adminVerified.token);
+  assert.strictEqual(driveSave.statusCode, 200, driveSave.body);
+  const driveResource = driveSave.json.resources.find((item) => item.slug === "drive-download-resource");
+  assert.strictEqual(driveResource.fileUrl, "https://drive.google.com/uc?export=download&id=1gCMqOsy7oF-u5hkpc-unnD4O6iFVDFil");
+
   const publicState = await call("GET", "/api?action=state");
   assert.strictEqual(publicState.statusCode, 200);
   const publicResource = publicState.json.resources.find((item) => item.slug === "icon-test-resource");

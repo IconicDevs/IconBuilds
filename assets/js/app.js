@@ -937,28 +937,26 @@ function stat(label, value) {
 }
 
 function adminResourceForm(resource = {}) {
+  const currentVersion = resource.currentVersion || "1.0.0";
+  const existingUpdates = resource.updates || [];
   return `<form id="resourceForm" class="form">
     <h2>${resource.id ? "Edit Resource" : "Create Resource"}</h2>
     <input type="hidden" name="id" value="${escapeHtml(resource.id || "")}">
+    <input type="hidden" name="existingUpdates" value="${escapeHtml(JSON.stringify(existingUpdates))}">
     <div class="form-grid"><div class="field"><label>Name</label><input class="input" name="name" value="${escapeHtml(resource.name || "")}" required></div><div class="field"><label>Slug</label><input class="input" name="slug" value="${escapeHtml(resource.slug || "")}" placeholder="auto-generated if empty"></div></div>
-    <div class="field"><label>Short description</label><input class="input" name="shortDescription" value="${escapeHtml(resource.shortDescription || "")}" required></div>
+    <div class="field"><label>Short description</label><input class="input" name="shortDescription" value="${escapeHtml(resource.shortDescription || "")}" required><p class="field-help">This also becomes the SEO description automatically.</p></div>
     <div class="form-grid"><div class="field"><label>Category</label><select class="select" name="category">${CONFIG.categories.map((cat) => `<option value="${cat.id}" ${resource.category === cat.id ? "selected" : ""}>${escapeHtml(cat.name)}</option>`).join("")}</select></div><div class="field"><label>Ownership label</label><select class="select" name="ownershipLabel">${CONFIG.resource.ownershipLabels.map((label) => `<option ${resource.ownershipLabel === label ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}</select></div></div>
-    <div class="form-grid"><div class="field"><label>Free or paid</label><select class="select" name="free"><option value="true" ${resource.free ? "selected" : ""}>Free</option><option value="false" ${!resource.free ? "selected" : ""}>Paid</option></select></div><div class="field"><label>Price cents</label><input class="input" name="priceCents" type="number" min="0" value="${Number(resource.priceCents || 0)}"></div></div>
+    <div class="form-grid"><div class="field"><label>Free or paid</label><select class="select" name="free"><option value="true" ${resource.free ? "selected" : ""}>Free</option><option value="false" ${!resource.free ? "selected" : ""}>Paid</option></select></div><div class="field"><label>Price</label><input class="input" name="price" type="number" min="0" step="0.01" value="${escapeHtml(priceInputValue(resource))}" placeholder="1.99"><p class="field-help">Use normal dollars, like 1.99. IconBuilds converts it internally.</p></div></div>
     <div class="form-grid"><div class="field"><label>Status</label><select class="select" name="status"><option value="draft" ${resource.status !== "published" ? "selected" : ""}>Draft</option><option value="published" ${resource.status === "published" ? "selected" : ""}>Published</option></select></div><label class="check-row"><input type="checkbox" name="featured" ${resource.featured ? "checked" : ""}> Featured</label></div>
     <div class="field"><label>Cover image URL</label><input class="input" name="coverImage" value="${escapeHtml(resource.coverImage || "")}"></div>
     <div class="field"><label>Showcase image URLs, one per line, max 4</label><textarea class="textarea" name="showcaseImages">${escapeHtml((resource.showcaseImages || []).join("\n"))}</textarea></div>
-    <div class="form-grid"><div class="field"><label>YouTube trailer</label><input class="input" name="youtubeUrl" value="${escapeHtml(resource.youtubeUrl || "")}"></div><div class="field"><label>Protected file URL</label><input class="input" name="fileUrl" value="${escapeHtml(resource.fileUrl || "")}"></div></div>
-    <div class="form-grid"><div class="field"><label>Current version</label><input class="input" name="currentVersion" value="${escapeHtml(resource.currentVersion || "1.0.0")}"></div><div class="field"><label>Tags, comma separated</label><input class="input" name="tags" value="${escapeHtml((resource.tags || []).join(", "))}"></div></div>
-    <div class="form-grid"><div class="field"><label>Minecraft versions, comma separated</label><input class="input" name="minecraftVersions" value="${escapeHtml((resource.minecraftVersions || []).join(", "))}"></div><div class="field"><label>Server software, comma separated</label><input class="input" name="serverSoftware" value="${escapeHtml((resource.serverSoftware || []).join(", "))}"></div></div>
-    <div class="field"><label>Compatibility, comma separated</label><input class="input" name="compatibility" value="${escapeHtml((resource.compatibility || []).join(", "))}"></div>
-    <div class="field"><label>Full rich description</label><textarea class="textarea" name="description" placeholder="Markdown-style headings, lists, links, code blocks, and embedded image URLs are sanitized.">${escapeHtml(resource.description || "")}</textarea></div>
-    <div class="field"><label>Dependencies JSON</label><textarea class="textarea" name="dependencies" placeholder='[{"name":"Vault","required":true,"version":"1.7","description":"Economy bridge","url":"https://..."}]'>${escapeHtml(JSON.stringify(resource.dependencies || [], null, 2))}</textarea></div>
-    <div class="field"><label>Updates JSON</label><textarea class="textarea" name="updates" placeholder='[{"version":"1.0.1","title":"Patch","date":"2026-07-22","changelog":"Fixed..."}]'>${escapeHtml(JSON.stringify(resource.updates || [], null, 2))}</textarea></div>
-    <div class="field"><label>Installation</label><textarea class="textarea" name="installation">${escapeHtml(resource.installation || "")}</textarea></div>
-    <div class="field"><label>Support info</label><textarea class="textarea" name="supportInfo">${escapeHtml(resource.supportInfo || "")}</textarea></div>
-    <div class="field"><label>SEO title</label><input class="input" name="seoTitle" value="${escapeHtml(resource.seoTitle || "")}"></div>
-    <div class="field"><label>SEO description</label><input class="input" name="seoDescription" value="${escapeHtml(resource.seoDescription || "")}"></div>
-    <div class="field"><label>Image alt text</label><input class="input" name="imageAlt" value="${escapeHtml(resource.imageAlt || "")}"></div>
+    <div class="form-grid"><div class="field"><label>YouTube trailer</label><input class="input" name="youtubeUrl" value="${escapeHtml(resource.youtubeUrl || "")}"></div><div class="field"><label>Protected download source</label><input class="input" name="fileUrl" value="${escapeHtml(resource.fileUrl || "")}" placeholder="Google Drive link or direct .zip/.jar URL"><p class="field-help">Paste a Google Drive file link or a direct file URL. IconBuilds hides it from public resource data and gives users a temporary download link after access checks.</p></div></div>
+    <div class="form-grid"><div class="field"><label>Resource version</label><input class="input" name="currentVersion" value="${escapeHtml(currentVersion)}" placeholder="1.0.0"><p class="field-help">Use 1.0.0 for the first release. Change this when you publish an update.</p></div><div class="field"><label>Tags</label><input class="input" name="tags" value="${escapeHtml((resource.tags || []).join(", "))}" placeholder="skript, lifesteal, dupe"></div></div>
+    <div class="form-grid">${multiSelectField("minecraftVersions", "Minecraft versions", CONFIG.filters.minecraftVersions, resource.minecraftVersions || [], "Choose versions")}${multiSelectField("serverSoftware", "Server software", CONFIG.filters.serverSoftware, resource.serverSoftware || [], "Choose software")}</div>
+    ${multiSelectField("compatibility", "Compatibility", CONFIG.filters.compatibility, resource.compatibility || [], "Choose compatibility")}
+    <div class="field"><label>Full description</label><textarea class="textarea tall" name="description" placeholder="Write the actual sales/resource description here. Headings, lists, links, images, and code blocks are sanitized.">${escapeHtml(resource.description || "")}</textarea></div>
+    <div class="field"><label>Dependencies</label><textarea class="textarea compact" name="dependenciesText" placeholder="SkBee\nVault\nPlaceholderAPI">${escapeHtml(dependenciesInputValue(resource))}</textarea><p class="field-help">One dependency per line. Leave it empty if there are none.</p></div>
+    <div class="admin-subsection"><h3>Changelog</h3><p class="field-help">Optional. When you release an update, set the resource version above, add the same version here, and write what changed.</p><div class="form-grid"><div class="field"><label>Update version</label><input class="input" name="newUpdateVersion" placeholder="${escapeHtml(currentVersion)}"></div><div class="field"><label>Update title</label><input class="input" name="newUpdateTitle" placeholder="Release"></div></div><div class="field"><label>Changelog</label><textarea class="textarea compact" name="newUpdateChangelog" placeholder="Added...\nFixed..."></textarea></div>${existingUpdates.length ? `<p class="field-help">Existing changelogs: ${escapeHtml(existingUpdates.map((item) => item.version).filter(Boolean).join(", "))}</p>` : ""}</div>
     <button class="button primary" type="submit">Save resource</button>
   </form>`;
 }
@@ -976,21 +974,28 @@ function adminReviewTable(reviews) {
 }
 
 function bindAdmin(state) {
+  setupMultiSelects();
   $("#resourceForm")?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const resource = Object.fromEntries(form.entries());
     resource.free = resource.free === "true";
     resource.featured = form.get("featured") === "on";
-    resource.priceCents = Number(resource.priceCents || 0);
+    resource.priceCents = resource.free ? 0 : dollarsToCents(form.get("price"));
     resource.showcaseImages = lines(resource.showcaseImages).slice(0, CONFIG.resource.showcaseImageLimit);
     resource.tags = csv(resource.tags);
-    resource.minecraftVersions = csv(resource.minecraftVersions);
-    resource.serverSoftware = csv(resource.serverSoftware);
-    resource.compatibility = csv(resource.compatibility);
+    resource.minecraftVersions = selectedValues(form, "minecraftVersions");
+    resource.serverSoftware = selectedValues(form, "serverSoftware");
+    resource.compatibility = selectedValues(form, "compatibility");
+    resource.dependencies = dependenciesFromText(form.get("dependenciesText"));
+    resource.updates = updatesFromForm(form, resource.currentVersion);
+    delete resource.price;
+    delete resource.dependenciesText;
+    delete resource.existingUpdates;
+    delete resource.newUpdateVersion;
+    delete resource.newUpdateTitle;
+    delete resource.newUpdateChangelog;
     try {
-      resource.dependencies = JSON.parse(resource.dependencies || "[]");
-      resource.updates = JSON.parse(resource.updates || "[]");
       const result = await request("admin", { command: "saveResource", resource });
       toast("Resource saved.");
       renderAdmin(result);
@@ -1036,6 +1041,69 @@ function lines(value = "") {
 
 function csv(value = "") {
   return String(value || "").split(",").map(clean).filter(Boolean);
+}
+
+function selectedValues(form, name) {
+  return [...new Set(form.getAll(name).map(clean).filter(Boolean))];
+}
+
+function priceInputValue(resource = {}) {
+  const cents = Number(resource.priceCents || 0);
+  return cents > 0 ? (cents / 100).toFixed(2) : "";
+}
+
+function dollarsToCents(value) {
+  const amount = Number.parseFloat(String(value || "0"));
+  return Number.isFinite(amount) ? Math.round(amount * 100) : 0;
+}
+
+function dependenciesInputValue(resource = {}) {
+  return (resource.dependencies || []).map((dep) => dep.name).filter(Boolean).join("\n");
+}
+
+function dependenciesFromText(value = "") {
+  const names = String(value || "").split(/[\r\n,]+/).map(clean).filter(Boolean);
+  return [...new Set(names)].map((name) => ({ name, required: true, version: "", description: "", url: "" }));
+}
+
+function updatesFromForm(form, currentVersion = "") {
+  let updates = [];
+  try {
+    const parsed = JSON.parse(form.get("existingUpdates") || "[]");
+    if (Array.isArray(parsed)) updates = parsed;
+  } catch {
+    updates = [];
+  }
+  const changelog = clean(form.get("newUpdateChangelog"));
+  if (!changelog) return updates;
+  const version = clean(form.get("newUpdateVersion")) || clean(currentVersion) || "1.0.0";
+  const next = {
+    version,
+    title: clean(form.get("newUpdateTitle")) || "Update",
+    date: new Date().toISOString().slice(0, 10),
+    changelog,
+    fileLabel: ""
+  };
+  return [next, ...updates.filter((item) => item.version !== version || item.changelog !== changelog)];
+}
+
+function multiSelectField(name, label, options = [], selected = [], placeholder = "Choose") {
+  const selectedSet = new Set((selected || []).map(clean).filter(Boolean));
+  const allOptions = [...new Set([...(selected || []), ...(options || [])].map(clean).filter(Boolean))];
+  const summary = selectedSet.size ? [...selectedSet].join(", ") : placeholder;
+  return `<div class="field"><label>${escapeHtml(label)}</label><details class="multi-select" data-placeholder="${escapeHtml(placeholder)}"><summary data-multi-summary>${escapeHtml(summary)}</summary><div class="multi-options">${allOptions.map((option) => `<label class="check-row"><input type="checkbox" name="${escapeHtml(name)}" value="${escapeHtml(option)}" ${selectedSet.has(option) ? "checked" : ""}> ${escapeHtml(option)}</label>`).join("")}</div></details></div>`;
+}
+
+function setupMultiSelects() {
+  $$(".multi-select").forEach((menu) => {
+    const update = () => {
+      const selected = $$('input[type="checkbox"]:checked', menu).map((input) => input.value);
+      const summary = $("[data-multi-summary]", menu);
+      if (summary) summary.textContent = selected.length ? selected.join(", ") : (menu.dataset.placeholder || "Choose");
+    };
+    $$('input[type="checkbox"]', menu).forEach((input) => input.addEventListener("change", update));
+    update();
+  });
 }
 
 function formatMoney(cents = 0) {

@@ -87,6 +87,23 @@ GITHUB_DB_BACKUP_PATH=data/iconbuilds-db.backup.json
 
 The token should only have contents read/write permission for the repo that stores the backup JSON. Do not put secrets in GitHub Pages, `config.js`, or frontend files.
 
+## Resource Download Links
+
+In the admin panel, paste the file into **Protected download source**.
+
+Supported sources:
+
+```text
+https://drive.google.com/uc?export=download&id=FILE_ID
+https://drive.google.com/file/d/FILE_ID/view
+https://example.com/resource.zip
+https://example.com/resource.jar
+```
+
+IconBuilds does not expose this source URL in public resource data. A user must log in, verify email, add or purchase the resource, then IconBuilds gives them a short-lived `/api?action=downloadFile` link.
+
+Google Drive files still need link access enabled so Vercel can redirect the buyer to the file. That is easier, but not as private as signed object storage. For stronger protection later, use Cloudflare R2, S3, Supabase Storage, or another provider that supports expiring signed download URLs.
+
 ## Optional Payments
 
 ```text

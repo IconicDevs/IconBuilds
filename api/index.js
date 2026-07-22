@@ -557,9 +557,10 @@ function moderateText(text, field = "content") {
 }
 
 function validateFileUrl(fileUrl) {
-  const url = safeUrl(fileUrl);
-  if (!url) return "";
-  const lower = new URL(url).pathname.toLowerCase();
+  const normalized = normalizeDownloadUrl(safeUrl(fileUrl));
+  if (!normalized) return "";
+  const parsed = new URL(normalized);
+  const lower = parsed.pathname.toLowerCase();
   for (const extension of CONFIG.moderation.suspiciousExtensions || []) {
     if (lower.endsWith(extension.toLowerCase())) {
       const err = new Error("That file type is not allowed.");
@@ -568,12 +569,35 @@ function validateFileUrl(fileUrl) {
     }
   }
   const allowed = CONFIG.resource.allowedFileExtensions || [];
-  if (allowed.length && !allowed.some((extension) => lower.endsWith(extension.toLowerCase()))) {
-    const err = new Error("That downloadable file extension is not allowed.");
+  const hasAllowedExtension = allowed.some((extension) => lower.endsWith(extension.toLowerCase()));
+  if (allowed.length && !hasAllowedExtension && !allowsExtensionlessDownload(parsed)) {
+    const err = new Error("Use a direct file URL ending in an allowed extension, or a Google Drive file/download link with a file id.");
     err.status = 400;
     throw err;
   }
-  return url;
+  return normalized;
+}
+
+function normalizeDownloadUrl(value) {
+  const url = new URL(value);
+  const driveId = googleDriveFileId(url);
+  if (driveId) return `https://drive.google.com/uc?export=download&id=${encodeURIComponent(driveId)}`;
+  return url.toString();
+}
+
+function googleDriveFileId(url) {
+  const host = url.hostname.toLowerCase();
+  if (!["drive.google.com", "drive.usercontent.google.com"].includes(host)) return "";
+  const queryId = url.searchParams.get("id") || url.searchParams.get("fileId");
+  const pathId = url.pathname.match(/\/file\/d\/([^/]+)/i)?.[1] || "";
+  const id = String(queryId || pathId || "").trim();
+  return /^[A-Za-z0-9_-]{10,}$/.test(id) ? id : "";
+}
+
+function allowsExtensionlessDownload(url) {
+  const hosts = new Set((CONFIG.resource.extensionlessDownloadHosts || []).map((item) => String(item || "").toLowerCase()));
+  if (!hosts.has(url.hostname.toLowerCase())) return false;
+  return url.hostname.toLowerCase().includes("google") ? Boolean(googleDriveFileId(url)) : true;
 }
 
 function parseArray(value, limit = 50) {
@@ -668,15 +692,15 @@ function sanitizeResource(input, db) {
     minecraftVersions: parseArray(resource.minecraftVersions, 30),
     serverSoftware: parseArray(resource.serverSoftware, 30),
     compatibility: parseArray(resource.compatibility, 30),
-    installation: moderateText(String(resource.installation || "").slice(0, 20000), "Installation"),
-    supportInfo: moderateText(String(resource.supportInfo || "").slice(0, 12000), "Support info"),
-    notices: moderateText(String(resource.notices || "").slice(0, 12000), "Notices"),
+    installation: resource.installation === undefined ? (existing.installation || "") : moderateText(String(resource.installation || "").slice(0, 20000), "Installation"),
+    supportInfo: resource.supportInfo === undefined ? (existing.supportInfo || "") : moderateText(String(resource.supportInfo || "").slice(0, 12000), "Support info"),
+    notices: resource.notices === undefined ? (existing.notices || "") : moderateText(String(resource.notices || "").slice(0, 12000), "Notices"),
     featured: Boolean(resource.featured),
     status,
-    seoTitle: String(resource.seoTitle || "").slice(0, 70),
-    seoDescription: String(resource.seoDescription || "").slice(0, 170),
+    seoTitle: `${name} | IconBuilds`.slice(0, 70),
+    seoDescription: (shortDescription || description.replace(/[#*_`>[\]()!-]/g, " ").replace(/\s+/g, " ").trim()).slice(0, 170),
     canonicalUrl: `${CONFIG.site.url}/resources/${slug}/`,
-    imageAlt: String(resource.imageAlt || `${name} resource preview`).slice(0, 180),
+    imageAlt: `${name} resource preview`.slice(0, 180),
     updatedAt: now(),
     createdAt: existing.createdAt || now(),
     publishedAt: status === "published" ? (existing.publishedAt || now()) : existing.publishedAt || "",
@@ -1220,9 +1244,15 @@ async function handleDownload(req, res, body) {
     if (!resource.fileUrl) return { ok: true, message: "Download file has not been attached yet." };
     db.downloads.push({ id: randomId("down_"), userId: user.id, resourceId: resource.id, ipHash: hashIp(req), createdAt: now() });
     recomputeResourceStats(db);
-    return { ok: true, downloadUrl: `${CONFIG.site.url}/api?action=downloadFile&token=${downloadToken(user.id, resource.id)}` };
+    return { ok: true, downloadUrl: apiActionUrl(req, "downloadFile", { token: downloadToken(user.id, resource.id) }) };
   }, "Record IconBuilds download");
   send(res, 200, result.result);
+}
+
+function apiActionUrl(req, action, params = {}) {
+  const base = `${getOrigin(req).replace(/\/+$/, "")}/api`;
+  const search = new URLSearchParams({ action, ...params });
+  return `${base}?${search.toString()}`;
 }
 
 function downloadToken(userId, resourceId) {
