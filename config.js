@@ -5,11 +5,11 @@
     domain: "minestore.org",
     url: "https://minestore.org",
     basePath: "",
-    logo: "logo.png",
-    favicon: "logo.png",
-    supportEmail: "icongens@gmail.com",
-    discordUrl: "https://discord.gg/xWnHRfDDkg",
-    copyright: "IconBuilds is an marketplace with assets from iconrealms. Not affiliated with Mojang or Microsoft."
+    logo: "/logo.png",
+    favicon: "/logo.png",
+    supportEmail: "support@minestore.org",
+    discordUrl: "https://discord.gg/HFyUfk458c",
+    copyright: "IconBuilds is an IconRealms marketplace. Not affiliated with Mojang or Microsoft."
   },
   api: {
     basePath: "/api",
@@ -26,9 +26,9 @@
       text: "#f8fbff",
       muted: "#9fb0c5",
       blue: "#E6E6FA",
-      cyan: "#22d3ee",
-      emerald: "#34d399",
-      violet: "#8b5cf6",
+      cyan: "#F3E8FF",
+      emerald: "#C9B6FF",
+      violet: "#B9A7FF",
       pink: "#ec4899",
       amber: "#f59e0b"
     }

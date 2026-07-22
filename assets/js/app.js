@@ -209,10 +209,11 @@ function filterResources(resources, filters = {}) {
 
 function layout(state, content) {
   const user = state.user || store.session?.user || null;
+  const logo = clean(CONFIG.site.logo);
   document.body.innerHTML = `<div class="site-shell">
     <header class="topbar">
       <nav class="nav">
-        <a class="brand" href="${route("/")}"><span class="brand-mark">IB</span><span>${escapeHtml(CONFIG.site.name)}</span></a>
+        <a class="brand" href="${route("/")}">${logo ? `<img class="brand-logo" src="${escapeHtml(logo)}" alt="${escapeHtml(CONFIG.site.name)} logo">` : `<span class="brand-mark">IB</span>`}<span>${escapeHtml(CONFIG.site.name)}</span></a>
         <button class="nav-button mobile-toggle" type="button" aria-label="Open menu">Menu</button>
         <div class="nav-links">
           ${navLink("/resources/", "Resources")}
