@@ -1,0 +1,11 @@
+{
+  "name": "iconbuilds",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plain HTML, CSS, and JavaScript marketplace for IconBuilds with Vercel serverless API endpoints.",
+  "scripts": {
+    "dev": "node local-server.js",
+    "vercel-dev": "vercel dev",
+    "check": "node --check api/resources.js && node --check api/admin-resources.js && node --check api/storage-health.js && node --check api/_storage.js && node --check script.js && node --check config.js"
+  }
+}

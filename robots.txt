@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /login
+Disallow: /account
+Disallow: /checkout
+Disallow: /downloads
+
+Sitemap: https://buildhub.gg/api/sitemap.xml
