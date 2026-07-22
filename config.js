@@ -1,4 +1,4 @@
-﻿const IconBuildsConfig = {
+onst IconBuildsConfig = {
   site: {
     name: "IconBuilds",
     owner: "IconRealms",
@@ -26,9 +26,9 @@
       text: "#f8fbff",
       muted: "#9fb0c5",
       blue: "#734f96",
-      cyan: "#F3E8FF",
-      emerald: "#C9B6FF",
-      violet: "#B9A7FF",
+      cyan: "#cdb9e6",
+      emerald: "#8d6bb0",
+      violet: "#9d7bc4",
       pink: "#ec4899",
       amber: "#f59e0b"
     }

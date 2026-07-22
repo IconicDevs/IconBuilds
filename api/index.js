@@ -1332,7 +1332,7 @@ function pageShell(page, title, description, canonical, body) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/png" href="/logo.png">
-  <meta name="theme-color" content="#E6E6FA">
+  <meta name="theme-color" content="#734f96">
   <title>${htmlEscape(title)}</title>
   <meta name="description" content="${htmlEscape(description)}">
   <meta name="robots" content="${CONFIG.seo.robotsIndex}">
@@ -1341,9 +1341,9 @@ function pageShell(page, title, description, canonical, body) {
   <meta property="og:description" content="${htmlEscape(description)}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="${htmlEscape(canonical)}">
-  <link rel="stylesheet" href="/assets/css/styles.css?v=lavender-20260722">
+  <link rel="stylesheet" href="/assets/css/styles.css?v=darklavender-20260722">
   <script src="/config.js" defer></script>
-  <script src="/assets/js/app.js?v=lavender-20260722" defer></script>
+  <script src="/assets/js/app.js?v=darklavender-20260722" defer></script>
 </head>
 <body data-page="${page}">${body}</body>
 </html>`;
