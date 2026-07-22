@@ -32,7 +32,7 @@
         "dupe"
       ],
       "free": false,
-      "priceCents": 500,
+      "priceCents": 199,
       "currency": "usd",
       "ownershipLabel": "IconRealms",
       "coverImage": "https://i.imgur.com/TGDilsM.png",
@@ -75,7 +75,7 @@
       "seoDescription": "A all in one dupe skript! Item blacklisting, and lifesteal!",
       "canonicalUrl": "https://minestore.org/resources/dupecore/",
       "imageAlt": "DupeCore resource preview",
-      "updatedAt": "2026-07-22T11:52:14.597Z",
+      "updatedAt": "2026-07-22T12:09:06.331Z",
       "createdAt": "2026-07-22T11:51:54.065Z",
       "publishedAt": "2026-07-22T11:52:14.597Z",
       "averageRating": 0,
@@ -123,6 +123,13 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
       "createdAt": "2026-07-22T11:52:14.597Z"
+    },
+    {
+      "id": "audit_f2c50b8c-c847-4622-8fab-78b86989ca07",
+      "type": "save-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
+      "createdAt": "2026-07-22T12:09:06.331Z"
     }
   ],
   "verificationChallenges": [
