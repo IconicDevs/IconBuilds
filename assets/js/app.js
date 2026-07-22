@@ -46,7 +46,7 @@ function route(path = "/") {
 }
 
 function apiUrl(action, params = {}) {
-  const base = CONFIG.api.productionBasePath || CONFIG.api.basePath || "/api";
+  const base = (CONFIG.api.productionBasePath || CONFIG.api.basePath || "/api").replace(/\/+$/, "");
   const search = new URLSearchParams({ action, ...params });
   return `${base}${base.includes("?") ? "&" : "?"}${search.toString()}`;
 }

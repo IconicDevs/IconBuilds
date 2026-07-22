@@ -12,8 +12,8 @@ const IconBuildsConfig = {
     copyright: "IconBuilds is an IconRealms marketplace. Not affiliated with Mojang or Microsoft."
   },
   api: {
-    basePath: "/api/",
-    productionBasePath: "/api/",
+    basePath: "/api",
+    productionBasePath: "/api",
     requestTimeoutMs: 25000
   },
   theme: {
