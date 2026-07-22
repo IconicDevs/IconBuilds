@@ -1,4 +1,4 @@
-onst IconBuildsConfig = {
+const IconBuildsConfig = {
   site: {
     name: "IconBuilds",
     owner: "IconRealms",
