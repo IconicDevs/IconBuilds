@@ -144,10 +144,21 @@ function mustVerify(user) {
 }
 
 function pageName() {
-  return document.body.dataset.page || "home";
+  const bodyPage = document.body.dataset.page || "home";
+  const params = new URLSearchParams(location.search);
+  const parts = location.pathname.split("/").filter(Boolean).map((part) => decodeURIComponent(part));
+  if (parts[0] === "resources") {
+    if (params.get("slug")) return "resource";
+    if (!parts[1]) return "resources";
+    return CONFIG.categories.some((item) => item.id === parts[1]) ? "resources" : "resource";
+  }
+  return bodyPage;
 }
 
 function pageSlug() {
+  const params = new URLSearchParams(location.search);
+  const querySlug = clean(params.get("slug") || "");
+  if (querySlug) return querySlug;
   const parts = location.pathname.split("/").filter(Boolean);
   return parts[0] === "resources" && parts[1] ? decodeURIComponent(parts[1]) : "";
 }
@@ -190,8 +201,14 @@ function categoryById(id) {
   return CONFIG.categories.find((item) => item.id === id) || { id, name: id || "Uncategorized", icon: "box", description: "" };
 }
 
-function resourceUrl(resource) {
-  return route(`/resources/${resource.slug || resource.id}/`);
+function resourceUrl(resource, params = {}) {
+  const search = new URLSearchParams({ slug: resource.slug || resource.id, ...params });
+  return route(`/resources/?${search.toString()}`);
+}
+
+function categoryUrl(category) {
+  const id = typeof category === "string" ? category : category?.id;
+  return route(`/resources/${encodeURIComponent(id || "")}/`);
 }
 
 function publicResources(state, options = {}) {
@@ -260,7 +277,7 @@ function layout(state, content) {
       </nav>
       <div class="category-rail">
         <div class="category-rail-inner">
-          ${CONFIG.categories.slice(0, 8).map((category) => `<a href="${route(`/resources/${category.id}/`)}">${escapeHtml(category.name)}</a>`).join("")}
+          ${CONFIG.categories.slice(0, 8).map((category) => `<a href="${categoryUrl(category)}">${escapeHtml(category.name)}</a>`).join("")}
         </div>
       </div>
     </header>
@@ -313,7 +330,7 @@ function renderHome(state) {
         </form>
         <div class="popular-searches">
           <strong>Popular searches:</strong>
-          ${CONFIG.categories.slice(0, 8).map((category) => `<a href="${route(`/resources/${category.id}/`)}">${escapeHtml(category.name)}</a>`).join("")}
+          ${CONFIG.categories.slice(0, 8).map((category) => `<a href="${categoryUrl(category)}">${escapeHtml(category.name)}</a>`).join("")}
         </div>
       </div>
       <div class="category-showcase">
@@ -383,7 +400,7 @@ function benefit(title, body) {
 }
 
 function categoryCard(category) {
-  return `<a class="card category-card" href="${route(`/resources/${category.id}/`)}">
+  return `<a class="card category-card" href="${categoryUrl(category)}">
     <span class="category-icon">${escapeHtml(category.icon.slice(0, 2).toUpperCase())}</span>
     <span><strong>${escapeHtml(category.name)}</strong><span class="muted">${escapeHtml(category.description)}</span></span>
   </a>`;
@@ -445,7 +462,7 @@ function heroMetric(label, value) {
 }
 
 function categoryPoster(category) {
-  return `<a class="category-poster" href="${route(`/resources/${category.id}/`)}">
+  return `<a class="category-poster" href="${categoryUrl(category)}">
     <span class="poster-shade"></span>
     <span class="poster-label">${escapeHtml(category.name)}</span>
   </a>`;
@@ -461,8 +478,10 @@ function renderMarketplace(state, kind = "") {
   };
   const resources = sortResources(filterResources(publicResources(state), baseFilters), baseFilters.sort);
   const counts = marketplaceCounts(state);
-  const heading = kind === "free" ? "Free Resources" : kind === "premium" ? "Premium Resources" : categoryFromPath() ? `${categoryById(categoryFromPath()).name} Resources` : "Resource Marketplace";
-  setSeo(kind === "free" ? "Free Minecraft Resources | IconBuilds" : kind === "premium" ? "Premium Minecraft Resources | IconBuilds" : "Minecraft Resource Marketplace | IconBuilds", CONFIG.seo.description, `${CONFIG.site.url}${kind ? `/${kind}/` : "/resources/"}`, CONFIG.seo.robotsIndex);
+  const heading = kind === "free" ? "Free Resources" : kind === "premium" ? "Premium Resources" : baseFilters.category ? `${categoryById(baseFilters.category).name} Resources` : "Resource Marketplace";
+  const marketplaceTitle = kind === "free" ? "Free Minecraft Resources | IconBuilds" : kind === "premium" ? "Premium Minecraft Resources | IconBuilds" : baseFilters.category ? `${categoryById(baseFilters.category).name} Resources | IconBuilds` : "Minecraft Resource Marketplace | IconBuilds";
+  const marketplaceUrl = kind ? `${CONFIG.site.url}/${kind}/` : baseFilters.category ? `${CONFIG.site.url}/resources/${encodeURIComponent(baseFilters.category)}/` : `${CONFIG.site.url}/resources/`;
+  setSeo(marketplaceTitle, CONFIG.seo.description, marketplaceUrl, CONFIG.seo.robotsIndex);
   layout(state, `<section class="section">
     <div class="market-hero">
       <div>
@@ -496,7 +515,7 @@ function renderMarketplace(state, kind = "") {
       <div>
         <div class="market-toolbar">
           <span>${resources.length.toLocaleString()} matching resources</span>
-          <div>${CONFIG.categories.slice(0, 4).map((category) => `<a class="chip small" href="${route(`/resources/${category.id}/`)}">${escapeHtml(category.name)}</a>`).join("")}</div>
+          <div>${CONFIG.categories.slice(0, 4).map((category) => `<a class="chip small" href="${categoryUrl(category)}">${escapeHtml(category.name)}</a>`).join("")}</div>
         </div>
         ${resources.length ? `<div class="resource-grid">${resources.map(resourceCard).join("")}</div>` : emptyShelf("Marketplace", `${CONFIG.copy.emptyResources} Admins can publish resources from the protected admin panel.`, "/resources/")}
       </div>
@@ -521,14 +540,14 @@ function renderResourceDetail(state) {
   const tab = new URLSearchParams(location.search).get("tab") || "overview";
   const owned = ownsResource(state, resource.id);
   const images = [resource.coverImage, ...(resource.showcaseImages || [])].filter(Boolean);
-  setSeo(resource.seoTitle || `${resource.name} | IconBuilds`, resource.seoDescription || resource.shortDescription || CONFIG.seo.description, `${CONFIG.site.url}/resources/${resource.slug}/`, CONFIG.seo.robotsIndex);
+  setSeo(resource.seoTitle || `${resource.name} | IconBuilds`, resource.seoDescription || resource.shortDescription || CONFIG.seo.description, `${CONFIG.site.url}/resources/?slug=${encodeURIComponent(resource.slug || resource.id)}`, CONFIG.seo.robotsIndex);
   layout(state, `<section class="section">
     <nav class="muted"><a href="${route("/resources/")}">Resources</a> / ${escapeHtml(categoryById(resource.category).name)} / ${escapeHtml(resource.name)}</nav>
     <div class="resource-layout">
       <article>
         <div class="section-head"><div><p class="eyebrow">${escapeHtml(categoryById(resource.category).name)}</p><h1 class="resource-title">${escapeHtml(resource.name)}</h1><p class="section-copy">${escapeHtml(resource.shortDescription || "")}</p></div></div>
         <div class="tabs">
-          ${["overview", "dependencies", "updates", "reviews"].map((name) => `<a class="tab-button ${tab === name ? "active" : ""}" href="${resourceUrl(resource)}?tab=${name}">${name.charAt(0).toUpperCase() + name.slice(1)}</a>`).join("")}
+          ${["overview", "dependencies", "updates", "reviews"].map((name) => `<a class="tab-button ${tab === name ? "active" : ""}" href="${resourceUrl(resource, { tab: name })}">${name.charAt(0).toUpperCase() + name.slice(1)}</a>`).join("")}
         </div>
         ${resourceTab(resource, state, tab, images)}
       </article>
