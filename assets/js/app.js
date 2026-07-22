@@ -350,10 +350,7 @@ function renderHome(state) {
       ${benefit("Updates & History", "Purchased and free resources stay attached to your account library.")}
     </div>
   </section>
-  <section class="section">
-    <div class="section-head"><div><h2 class="section-title">${escapeHtml(CONFIG.copy.categoriesTitle)}</h2><p class="section-copy">All categories are controlled in config.js.</p></div></div>
-    <div class="grid three">${CONFIG.categories.map(categoryCard).join("")}</div>
-  </section>`);
+  `);
   $("#homeSearch")?.addEventListener("submit", (event) => {
     event.preventDefault();
     const q = clean($("#homeSearchInput").value);
