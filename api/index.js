@@ -1339,7 +1339,6 @@ function pageShell(page, title, description, canonical, body) {
   <meta property="og:description" content="${htmlEscape(description)}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="${htmlEscape(canonical)}">
-  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/css/styles.css">
   <script src="/config.js" defer></script>
   <script src="/assets/js/app.js" defer></script>

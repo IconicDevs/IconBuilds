@@ -211,8 +211,18 @@ function layout(state, content) {
   const user = state.user || store.session?.user || null;
   document.body.innerHTML = `<div class="site-shell">
     <header class="topbar">
+      <div class="utility-bar">
+        <div class="utility-inner">
+          <span>Official IconRealms marketplace</span>
+          <a href="${route("/resources/")}">Browse resources</a>
+        </div>
+      </div>
       <nav class="nav">
-        <a class="brand" href="${route("/")}"><img src="${route(CONFIG.site.favicon)}" alt=""><span>${escapeHtml(CONFIG.site.name)}</span></a>
+        <a class="brand" href="${route("/")}"><span class="brand-mark">IB</span><span>${escapeHtml(CONFIG.site.name)}</span></a>
+        <form class="nav-search" id="navSearch">
+          <input name="q" placeholder="Search resources">
+          <button type="submit">Search</button>
+        </form>
         <button class="nav-button mobile-toggle" type="button" aria-label="Open menu">Menu</button>
         <div class="nav-links">
           ${navLink("/", "Home")}
@@ -225,6 +235,11 @@ function layout(state, content) {
           ${user ? `<button class="nav-button" id="logoutButton" type="button">Logout</button>` : `<a class="nav-button primary" href="${route("/signup/")}">Create account</a>`}
         </div>
       </nav>
+      <div class="category-rail">
+        <div class="category-rail-inner">
+          ${CONFIG.categories.slice(0, 8).map((category) => `<a href="${route(`/resources/${category.id}/`)}">${escapeHtml(category.name)}</a>`).join("")}
+        </div>
+      </div>
     </header>
     <main id="app" class="page">${content}</main>
     <footer class="footer">
@@ -235,6 +250,11 @@ function layout(state, content) {
     </footer>
   </div>`;
   $(".mobile-toggle")?.addEventListener("click", () => $(".nav-links")?.classList.toggle("open"));
+  $("#navSearch")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const q = clean(new FormData(event.currentTarget).get("q"));
+    location.href = route(`/resources/${q ? `?q=${encodeURIComponent(q)}` : ""}`);
+  });
   $("#logoutButton")?.addEventListener("click", () => {
     store.session = null;
     location.href = route("/");
@@ -252,6 +272,7 @@ function renderHome(state) {
   const free = sortResources(publicResources(state, { kind: "free" })).slice(0, 3);
   const paid = sortResources(publicResources(state, { kind: "premium" })).slice(0, 3);
   const recommended = recommendations(state, published).slice(0, 4);
+  const counts = marketplaceCounts(state);
   layout(state, `<section class="hero">
     <div class="hero-content">
       <p class="eyebrow">${escapeHtml(CONFIG.copy.heroEyebrow)}</p>
@@ -261,20 +282,19 @@ function renderHome(state) {
         <input id="homeSearchInput" placeholder="${escapeHtml(CONFIG.copy.searchPlaceholder)}">
         <button class="button primary" type="submit">Search</button>
       </form>
+      ${categoryShelf()}
       <div class="hero-actions">
         <a class="button primary" href="${route("/resources/")}">Browse Resources</a>
         <a class="button" href="${route("/free/")}">Free Resources</a>
       </div>
-    </div>
-    <div class="hero-art" aria-hidden="true">
-      <div class="build-preview">
-        <div class="pixel-sky"></div>
-        <div class="pixel-ground"></div>
-        <div class="pixel-tower"></div>
-        <div class="pixel-crate"></div>
-        <div class="pixel-panel"><strong>IconRealms Vault</strong><span>Plugins, setups, builds, graphics, models, and Discord packs.</span></div>
+      <div class="count-row">
+        ${countPill("published", counts.published)}
+        ${countPill("free", counts.free)}
+        ${countPill("premium", counts.premium)}
+        ${countPill("categories", counts.categories)}
       </div>
     </div>
+    <div class="hero-art">${heroShowcase(state)}</div>
   </section>
   ${sectionResources(CONFIG.copy.recommendedTitle, recommended, CONFIG.copy.recommendedFallback, "/resources/")}
   ${sectionResources(CONFIG.copy.freeTitle, free, "Free resources will appear here after an admin publishes them.", "/free/")}
@@ -311,8 +331,22 @@ function recommendations(state, resources) {
 function sectionResources(title, resources, empty, browseHref) {
   return `<section class="section">
     <div class="section-head"><div><h2 class="section-title">${escapeHtml(title)}</h2><p class="section-copy">${resources.length ? "Official IconRealms resources ready to browse." : escapeHtml(empty)}</p></div><a class="button" href="${route(browseHref)}">View all</a></div>
-    ${resources.length ? `<div class="resource-grid">${resources.map(resourceCard).join("")}</div>` : `<div class="empty">${escapeHtml(empty)}</div>`}
+    ${resources.length ? `<div class="resource-grid">${resources.map(resourceCard).join("")}</div>` : emptyShelf(title, empty, browseHref)}
   </section>`;
+}
+
+function emptyShelf(title, empty, browseHref = "/resources/") {
+  return `<div class="empty-shelf">
+    <div class="empty-shelf-copy">
+      <span class="shelf-kicker">${escapeHtml(title)}</span>
+      <h3>Official releases will show here</h3>
+      <p>${escapeHtml(empty)}</p>
+      <a class="button" href="${route(browseHref)}">Browse catalog</a>
+    </div>
+    <div class="empty-slots" aria-hidden="true">
+      <span></span><span></span><span></span>
+    </div>
+  </div>`;
 }
 
 function benefit(title, body) {
@@ -320,7 +354,7 @@ function benefit(title, body) {
 }
 
 function categoryCard(category) {
-  return `<a class="card category-card" href="${route(`/resources/?category=${encodeURIComponent(category.id)}`)}">
+  return `<a class="card category-card" href="${route(`/resources/${category.id}/`)}">
     <span class="category-icon">${escapeHtml(category.icon.slice(0, 2).toUpperCase())}</span>
     <span><strong>${escapeHtml(category.name)}</strong><span class="muted">${escapeHtml(category.description)}</span></span>
   </a>`;
@@ -330,7 +364,7 @@ function resourceCard(resource) {
   const category = categoryById(resource.category);
   const image = resource.coverImage || "";
   return `<article class="resource-card">
-    <a class="resource-cover" href="${resourceUrl(resource)}">${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(resource.imageAlt || `${resource.name} cover image`)}">` : `<img class="placeholder-mark" src="${route(CONFIG.site.favicon)}" alt="">`}</a>
+    <a class="resource-cover" href="${resourceUrl(resource)}">${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(resource.imageAlt || `${resource.name} cover image`)}">` : `<div class="resource-cover-placeholder"><span>${escapeHtml(category.name)}</span><strong>${escapeHtml(initials(resource.name))}</strong></div>`}</a>
     <div class="resource-body">
       <div class="badge-row">
         <span class="badge">${escapeHtml(category.name)}</span>
@@ -351,16 +385,63 @@ function resourceCard(resource) {
   </article>`;
 }
 
-function stars(value) {
-  const rating = Math.round(Number(value || 0));
-  return `${"★".repeat(rating)}${"☆".repeat(Math.max(0, 5 - rating))}`;
-}
-
 function formatDate(value) {
   if (!value) return "Not dated";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "Not dated";
   return date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+
+function initials(value = "") {
+  const words = String(value || CONFIG.site.name).split(/\s+/).filter(Boolean);
+  return (words.length > 1 ? `${words[0][0]}${words[1][0]}` : words[0]?.slice(0, 2) || "IB").toUpperCase();
+}
+
+function marketplaceCounts(state) {
+  const resources = publicResources(state);
+  return {
+    published: resources.length,
+    free: resources.filter((item) => item.free || Number(item.priceCents || 0) <= 0).length,
+    premium: resources.filter((item) => !item.free && Number(item.priceCents || 0) > 0).length,
+    categories: CONFIG.categories.length
+  };
+}
+
+function countPill(label, value) {
+  return `<div class="count-pill"><strong>${Number(value || 0).toLocaleString()}</strong><span>${escapeHtml(label)}</span></div>`;
+}
+
+function homeCategoryTile(category, index) {
+  return `<a class="showcase-tile tone-${index % 6}" href="${route(`/resources/${category.id}/`)}">
+    <span>${escapeHtml(category.name)}</span>
+    <small>${escapeHtml(category.description)}</small>
+  </a>`;
+}
+
+function heroShowcase(state) {
+  const resources = sortResources(publicResources(state)).slice(0, 3);
+  if (resources.length) {
+    return `<div class="hero-showcase-card">
+      <div class="showcase-top"><span>Featured shelf</span><a href="${route("/resources/")}">View all</a></div>
+      <div class="showcase-stack">${resources.map((resource) => resourceMiniRow(resource)).join("")}</div>
+    </div>`;
+  }
+  return `<div class="hero-showcase-card">
+    <div class="showcase-top"><span>Catalog shelves</span><a href="${route("/resources/")}">Open marketplace</a></div>
+    <div class="showcase-grid">${CONFIG.categories.slice(0, 6).map(homeCategoryTile).join("")}</div>
+    <div class="release-note"><strong>Awaiting first release</strong><span>Admins can publish official IconRealms resources from the protected admin panel.</span></div>
+  </div>`;
+}
+
+function resourceMiniRow(resource) {
+  return `<a class="resource-mini" href="${resourceUrl(resource)}">
+    <span class="mini-cover">${initials(resource.name)}</span>
+    <span><strong>${escapeHtml(resource.name)}</strong><small>${escapeHtml(categoryById(resource.category).name)} - ${escapeHtml(priceLabel(resource))}</small></span>
+  </a>`;
+}
+
+function categoryShelf() {
+  return `<div class="category-shelf">${CONFIG.categories.slice(0, 6).map((category) => `<a class="chip" href="${route(`/resources/${category.id}/`)}">${escapeHtml(category.name)}</a>`).join("")}</div>`;
 }
 
 function renderMarketplace(state, kind = "") {
@@ -372,10 +453,21 @@ function renderMarketplace(state, kind = "") {
     sort: params.get("sort") || "recommended"
   };
   const resources = sortResources(filterResources(publicResources(state), baseFilters), baseFilters.sort);
+  const counts = marketplaceCounts(state);
+  const heading = kind === "free" ? "Free Resources" : kind === "premium" ? "Premium Resources" : categoryFromPath() ? `${categoryById(categoryFromPath()).name} Resources` : "Resource Marketplace";
   setSeo(kind === "free" ? "Free Minecraft Resources | IconBuilds" : kind === "premium" ? "Premium Minecraft Resources | IconBuilds" : "Minecraft Resource Marketplace | IconBuilds", CONFIG.seo.description, `${CONFIG.site.url}${kind ? `/${kind}/` : "/resources/"}`, CONFIG.seo.robotsIndex);
   layout(state, `<section class="section">
-    <div class="section-head">
-      <div><p class="eyebrow">Marketplace</p><h1 class="section-title">${kind === "free" ? "Free Resources" : kind === "premium" ? "Premium Resources" : "All Resources"}</h1><p class="section-copy">Only admin-published IconRealms resources appear here. No public uploads, no fake listings.</p></div>
+    <div class="market-hero">
+      <div>
+        <p class="eyebrow">Marketplace</p>
+        <h1 class="section-title">${escapeHtml(heading)}</h1>
+        <p class="section-copy">Browse official IconRealms resources. No public uploads, no seller dashboards, and no fake marketplace numbers.</p>
+      </div>
+      <div class="count-row compact">
+        ${countPill("published", counts.published)}
+        ${countPill("free", counts.free)}
+        ${countPill("premium", counts.premium)}
+      </div>
     </div>
     <div class="market-layout">
       <aside class="filters panel">
@@ -395,7 +487,11 @@ function renderMarketplace(state, kind = "") {
         </form>
       </aside>
       <div>
-        ${resources.length ? `<div class="resource-grid">${resources.map(resourceCard).join("")}</div>` : `<div class="empty">${escapeHtml(CONFIG.copy.emptyResources)} Admins can publish resources from the protected admin panel.</div>`}
+        <div class="market-toolbar">
+          <span>${resources.length.toLocaleString()} matching resources</span>
+          <div>${CONFIG.categories.slice(0, 4).map((category) => `<a class="chip small" href="${route(`/resources/${category.id}/`)}">${escapeHtml(category.name)}</a>`).join("")}</div>
+        </div>
+        ${resources.length ? `<div class="resource-grid">${resources.map(resourceCard).join("")}</div>` : emptyShelf("Marketplace", `${CONFIG.copy.emptyResources} Admins can publish resources from the protected admin panel.`, "/resources/")}
       </div>
     </div>
   </section>`);
@@ -466,7 +562,7 @@ function resourceTab(resource, state, tab, images) {
     return updates.length ? `<div class="grid">${updates.map((update) => `<div class="panel"><h3>v${escapeHtml(update.version)} - ${escapeHtml(update.title || "Update")}</h3><p class="muted">${escapeHtml(formatDate(update.date))}</p><div class="rich-text">${safeRichText(update.changelog || "")}</div></div>`).join("")}</div>` : `<div class="empty">No changelogs have been published yet.</div>`;
   }
   if (tab === "reviews") return reviewsMarkup(resource, state);
-  return `<div class="gallery-main">${images[0] ? `<img src="${escapeHtml(images[0])}" alt="${escapeHtml(resource.imageAlt || resource.name)}">` : `<div class="resource-cover"><img class="placeholder-mark" src="${route(CONFIG.site.favicon)}" alt=""></div>`}</div>
+  return `<div class="gallery-main">${images[0] ? `<img src="${escapeHtml(images[0])}" alt="${escapeHtml(resource.imageAlt || resource.name)}">` : `<div class="resource-cover-placeholder large"><span>${escapeHtml(categoryById(resource.category).name)}</span><strong>${escapeHtml(initials(resource.name))}</strong></div>`}</div>
     ${images.length > 1 ? `<div class="showcase-strip">${images.map((image) => `<button type="button"><img src="${escapeHtml(image)}" alt="${escapeHtml(resource.name)} showcase image"></button>`).join("")}</div>` : ""}
     ${resource.youtubeUrl ? `<div class="panel" style="margin-top:14px"><a class="button" href="${escapeHtml(resource.youtubeUrl)}" target="_blank" rel="noopener">Watch trailer</a></div>` : ""}
     <div class="panel rich-text" style="margin-top:14px">${safeRichText(resource.description || "No description has been published yet.")}</div>

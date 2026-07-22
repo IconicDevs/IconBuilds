@@ -1,4 +1,4 @@
-const fs = require("fs/promises");
+﻿const fs = require("fs/promises");
 const os = require("os");
 const path = require("path");
 const { Readable } = require("stream");
@@ -107,8 +107,8 @@ async function run() {
       category: "plugins",
       status: "published",
       free: true,
-      coverImage: "https://buildhub.gg/assets/favicon.svg",
-      fileUrl: "https://buildhub.gg/downloads/icon-test.zip",
+      coverImage: "",
+      fileUrl: "https://minestore.org/downloads/icon-test.zip",
       currentVersion: "1.0.0",
       minecraftVersions: ["1.21.6"],
       serverSoftware: ["Paper"],
@@ -134,7 +134,7 @@ async function run() {
 
   const sitemap = await call("GET", "/sitemap.xml");
   assert.strictEqual(sitemap.statusCode, 200);
-  assert(sitemap.body.includes("https://buildhub.gg/resources/icon-test-resource/"));
+  assert(sitemap.body.includes("https://minestore.org/resources/icon-test-resource/"));
   assert(!sitemap.body.includes("/admin/"));
 
   const userRegister = await call("POST", "/api?action=register", {

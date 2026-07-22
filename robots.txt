@@ -1,4 +1,4 @@
-User-agent: *
+﻿User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /account/
@@ -8,4 +8,4 @@ Disallow: /verify/
 Disallow: /checkout/
 Disallow: /api/
 
-Sitemap: https://buildhub.gg/sitemap.xml
+Sitemap: https://minestore.org/sitemap.xml

@@ -1,13 +1,13 @@
-const IconBuildsConfig = {
+﻿const IconBuildsConfig = {
   site: {
     name: "IconBuilds",
     owner: "IconRealms",
-    domain: "buildhub.gg",
-    url: "https://buildhub.gg",
+    domain: "minestore.org",
+    url: "https://minestore.org",
     basePath: "",
-    logo: "/assets/iconbuilds-logo.svg",
-    favicon: "/assets/favicon.svg",
-    supportEmail: "support@buildhub.gg",
+    logo: "",
+    favicon: "",
+    supportEmail: "support@minestore.org",
     discordUrl: "https://discord.gg/HFyUfk458c",
     copyright: "IconBuilds is an IconRealms marketplace. Not affiliated with Mojang or Microsoft."
   },
@@ -52,16 +52,16 @@ const IconBuildsConfig = {
     robotsPrivate: "noindex, nofollow"
   },
   copy: {
-    heroEyebrow: "Official IconRealms Marketplace",
-    heroTitle: "Premium Minecraft Resources, Built by IconRealms",
+    heroEyebrow: "Minecraft Resource Marketplace",
+    heroTitle: "Official Minecraft Resources by IconRealms",
     heroBody:
-      "Discover builds, plugins, Skripts, server setups, graphics, textures, models, and Discord resources made or approved by the IconRealms team.",
-    searchPlaceholder: "Search plugins, builds, setups, graphics, Discord resources...",
+      "Browse plugins, builds, Skripts, server setups, graphics, textures, models, and Discord resources released by the IconRealms team.",
+    searchPlaceholder: "Search plugins, builds, setups, graphics, Discord resources",
     recommendedTitle: "Recommended for You",
-    recommendedFallback: "Featured or popular resources appear here when enough public resources are published.",
+    recommendedFallback: "Official drops will appear here after an administrator publishes the first resources.",
     freeTitle: "Free Resources",
     paidTitle: "Premium Resources",
-    emptyResources: "No resources have been published yet.",
+    emptyResources: "The catalog is being prepared. Published resources will appear here automatically.",
     whyTitle: "Why Buy Through IconBuilds?",
     categoriesTitle: "Browse by Category"
   },
