@@ -70,14 +70,14 @@
       "supportInfo": "",
       "notices": "",
       "featured": true,
-      "status": "draft",
+      "status": "published",
       "seoTitle": "DupeCore | IconBuilds",
       "seoDescription": "A all in one dupe skript! Item blacklisting, and lifesteal!",
       "canonicalUrl": "https://minestore.org/resources/dupecore/",
       "imageAlt": "DupeCore resource preview",
-      "updatedAt": "2026-07-22T11:51:54.065Z",
+      "updatedAt": "2026-07-22T11:52:14.597Z",
       "createdAt": "2026-07-22T11:51:54.065Z",
-      "publishedAt": "",
+      "publishedAt": "2026-07-22T11:52:14.597Z",
       "averageRating": 0,
       "reviewCount": 0,
       "downloadCount": 0,
@@ -109,6 +109,13 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
       "createdAt": "2026-07-22T11:51:54.065Z"
+    },
+    {
+      "id": "audit_f40e3144-f960-4d3f-8099-6d04478d74ec",
+      "type": "toggle-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
+      "createdAt": "2026-07-22T11:52:14.597Z"
     }
   ],
   "verificationChallenges": [
