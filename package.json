@@ -2,10 +2,12 @@
   "name": "iconbuilds",
   "version": "1.0.0",
   "private": true,
-  "description": "Plain HTML, CSS, and JavaScript marketplace for IconBuilds with Vercel serverless API endpoints.",
+  "description": "IconBuilds resource marketplace for IconRealms resources.",
   "scripts": {
-    "dev": "node local-server.js",
-    "vercel-dev": "vercel dev",
-    "check": "node --check api/resources.js && node --check api/admin-resources.js && node --check api/storage-health.js && node --check api/_storage.js && node --check script.js && node --check config.js"
-  }
+    "check": "node -c api/index.js && node -c assets/js/app.js && node -c config.js && node -c dev-server.js && node -c scripts/smoke-test.js",
+    "smoke": "node scripts/smoke-test.js",
+    "static": "node dev-server.js"
+  },
+  "dependencies": {},
+  "devDependencies": {}
 }

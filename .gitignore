@@ -1,6 +1,7 @@
-.vercel
 .env
-.env.local
-node_modules
-*.log
-.DS_Store
+.env.*
+node_modules/
+static-server.log
+static-server.err.log
+*.local.json
+*.tmp

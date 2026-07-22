@@ -1,26 +1,12 @@
 {
-  "version": 2,
+  "cleanUrls": true,
+  "trailingSlash": true,
   "rewrites": [
-    { "source": "/resources/:slug", "destination": "/index.html" },
-    { "source": "/resources", "destination": "/index.html" },
-    { "source": "/free", "destination": "/index.html" },
-    { "source": "/premium", "destination": "/index.html" },
-    { "source": "/support", "destination": "/index.html" },
-    { "source": "/login", "destination": "/index.html" },
-    { "source": "/admin", "destination": "/index.html" },
-    { "source": "/terms", "destination": "/index.html" },
-    { "source": "/privacy", "destination": "/index.html" },
-    { "source": "/refunds", "destination": "/index.html" },
-    { "source": "/community", "destination": "/index.html" },
-    { "source": "/contact", "destination": "/index.html" }
+    { "source": "/sitemap.xml", "destination": "/api/index.js?action=sitemap" },
+    { "source": "/resources/:slug", "destination": "/api/index.js?action=resourcePage&slug=:slug" },
+    { "source": "/api/:path*", "destination": "/api/index.js" }
   ],
   "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store" }
-      ]
-    },
     {
       "source": "/(.*)",
       "headers": [
