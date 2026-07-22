@@ -88,7 +88,14 @@
   "purchases": [],
   "downloads": [],
   "library": [],
-  "favorites": [],
+  "favorites": [
+    {
+      "id": "fav_73dbd41f-0ebf-47d5-9b63-7dd465aa82ea",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
+      "createdAt": "2026-07-22T12:06:06.553Z"
+    }
+  ],
   "reports": [],
   "auditLogs": [
     {
