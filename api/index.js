@@ -1341,9 +1341,9 @@ function pageShell(page, title, description, canonical, body) {
   <meta property="og:description" content="${htmlEscape(description)}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="${htmlEscape(canonical)}">
-  <link rel="stylesheet" href="/assets/css/styles.css?v=darklavender-20260722">
+  <link rel="stylesheet" href="/assets/css/styles.css?v=api-route-20260722">
   <script src="/config.js" defer></script>
-  <script src="/assets/js/app.js?v=darklavender-20260722" defer></script>
+  <script src="/assets/js/app.js?v=api-route-20260722" defer></script>
 </head>
 <body data-page="${page}">${body}</body>
 </html>`;

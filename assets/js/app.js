@@ -82,7 +82,9 @@ async function request(action, payload = {}, method = "POST") {
     try {
       json = text ? JSON.parse(text) : {};
     } catch {
-      throw new Error("The API returned an unreadable response.");
+      const error = new Error(`The API did not return JSON (${response.status}). Check that the Vercel API route is deployed.`);
+      error.status = response.status;
+      throw error;
     }
     if (!response.ok || json.error) {
       const error = new Error(json.error || "That action could not be completed.");
