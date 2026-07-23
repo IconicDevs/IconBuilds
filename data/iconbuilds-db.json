@@ -26,12 +26,12 @@
       "roles": [
         "admin"
       ],
-      "emailVerified": false,
+      "emailVerified": true,
       "emailOptIn": false,
       "googleId": "",
       "avatarUrl": "",
       "createdAt": "2026-07-23T17:50:39.392Z",
-      "updatedAt": "2026-07-23T17:50:39.392Z"
+      "updatedAt": "2026-07-23T17:51:14.961Z"
     }
   ],
   "resources": [
@@ -152,6 +152,12 @@
       "type": "register",
       "userId": "usr_07b82c34-7b7a-4d98-9172-867aea29b31d",
       "createdAt": "2026-07-23T17:50:39.559Z"
+    },
+    {
+      "id": "audit_8d128b37-9e64-489b-b787-dfc7562a96b7",
+      "type": "verify-email",
+      "userId": "usr_07b82c34-7b7a-4d98-9172-867aea29b31d",
+      "createdAt": "2026-07-23T17:51:14.961Z"
     }
   ],
   "verificationChallenges": [
@@ -173,7 +179,7 @@
       "createdAt": "2026-07-23T17:50:39.453Z",
       "expiresAt": "2026-07-23T18:20:39.453Z",
       "lastSentAt": "2026-07-23T17:50:39.453Z",
-      "usedAt": ""
+      "usedAt": "2026-07-23T17:51:14.961Z"
     }
   ],
   "passwordResets": []
