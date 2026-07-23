@@ -16,6 +16,22 @@
       "avatarUrl": "",
       "createdAt": "2026-07-22T11:19:43.934Z",
       "updatedAt": "2026-07-22T11:20:05.021Z"
+    },
+    {
+      "id": "usr_07b82c34-7b7a-4d98-9172-867aea29b31d",
+      "username": "TheStickBoy",
+      "email": "thezmsquad15@gmail.com",
+      "passwordHash": "39f5f8e26165f908940ddb1f1e816f42:4189ef5bba49081222822b1643b12b8991c48c3dbdd7a7dc26f677239c02333678ce7590be0cfb70abe76ed813c6b7422c211563ed1e1d921fdc4d9804fd627c",
+      "role": "admin",
+      "roles": [
+        "admin"
+      ],
+      "emailVerified": false,
+      "emailOptIn": false,
+      "googleId": "",
+      "avatarUrl": "",
+      "createdAt": "2026-07-23T17:50:39.392Z",
+      "updatedAt": "2026-07-23T17:50:39.392Z"
     }
   ],
   "resources": [
@@ -130,6 +146,12 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
       "createdAt": "2026-07-22T12:09:06.331Z"
+    },
+    {
+      "id": "audit_2ad14f45-e9fd-4984-8497-052b771ceb6a",
+      "type": "register",
+      "userId": "usr_07b82c34-7b7a-4d98-9172-867aea29b31d",
+      "createdAt": "2026-07-23T17:50:39.559Z"
     }
   ],
   "verificationChallenges": [
@@ -142,6 +164,16 @@
       "expiresAt": "2026-07-22T11:49:44.010Z",
       "lastSentAt": "2026-07-22T11:19:44.010Z",
       "usedAt": "2026-07-22T11:20:05.021Z"
+    },
+    {
+      "id": "ver_017ce0eb-13c9-44c4-b799-d8cb83e7538a",
+      "userId": "usr_07b82c34-7b7a-4d98-9172-867aea29b31d",
+      "email": "thezmsquad15@gmail.com",
+      "codeHash": "4c0a5dcaf4ac7aa9aa48194aa56c8ce2:c0caff35c2d9ac3bc089798dccb186f9a67c2fc38a2da2683fa1f478f5606521c5a7b216353520539c9a0474c5f0ed626accf1432aeba14e52e5f23d3d53bc48",
+      "createdAt": "2026-07-23T17:50:39.453Z",
+      "expiresAt": "2026-07-23T18:20:39.453Z",
+      "lastSentAt": "2026-07-23T17:50:39.453Z",
+      "usedAt": ""
     }
   ],
   "passwordResets": []
