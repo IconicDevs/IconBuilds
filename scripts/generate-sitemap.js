@@ -32,7 +32,7 @@ function siteUrl(pathname = "") {
 }
 
 function resourcePath(resource) {
-  return `resources/?slug=${encodeURIComponent(resource.slug || resource.id)}`;
+  return `resources/?id=${encodeURIComponent(resource.slug || resource.id)}`;
 }
 
 function urlEntry(loc, changefreq, priority, lastmod = new Date().toISOString()) {

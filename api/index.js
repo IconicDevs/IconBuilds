@@ -30,6 +30,11 @@ function now() {
   return new Date().toISOString();
 }
 
+function normalizeCategoryId(id = "") {
+  const value = String(id || "").trim();
+  return ["graphics", "textures", "models", "discord-graphics"].includes(value) ? "textures-models" : value;
+}
+
 function send(res, status, payload, headers = {}) {
   res.writeHead(status, { ...JSON_HEADERS, ...responseHeaders(res, headers) });
   res.end(JSON.stringify(payload));
@@ -253,6 +258,7 @@ function publicUser(user) {
 function publicResource(resource, admin = false) {
   if (!resource) return null;
   const copy = { ...resource };
+  copy.category = normalizeCategoryId(copy.category);
   if (!admin) {
     delete copy.fileUrl;
     delete copy.internalNotes;
@@ -265,6 +271,7 @@ function normalizeDb(input) {
   for (const key of Object.keys(DB_DEFAULT)) {
     if (Array.isArray(DB_DEFAULT[key]) && !Array.isArray(db[key])) db[key] = [];
   }
+  db.resources = db.resources.map((resource) => ({ ...resource, category: normalizeCategoryId(resource.category) }));
   db.version = Number(db.version || 1);
   return db;
 }
@@ -640,7 +647,7 @@ function sanitizeResource(input, db) {
     err.status = 400;
     throw err;
   }
-  const category = String(resource.category || "").trim();
+  const category = normalizeCategoryId(resource.category);
   if (!CONFIG.categories.some((item) => item.id === category)) {
     const err = new Error("Choose a valid category.");
     err.status = 400;
@@ -699,7 +706,7 @@ function sanitizeResource(input, db) {
     status,
     seoTitle: `${name} | IconBuilds`.slice(0, 70),
     seoDescription: (shortDescription || description.replace(/[#*_`>[\]()!-]/g, " ").replace(/\s+/g, " ").trim()).slice(0, 170),
-    canonicalUrl: `${CONFIG.site.url}/resources/?slug=${encodeURIComponent(slug)}`,
+    canonicalUrl: `${CONFIG.site.url}/resources/?id=${encodeURIComponent(slug)}`,
     imageAlt: `${name} resource preview`.slice(0, 180),
     updatedAt: now(),
     createdAt: existing.createdAt || now(),
@@ -1372,7 +1379,7 @@ function sitemapXml(db) {
     ["guidelines/", "monthly", "0.3"],
     ["support/", "monthly", "0.4"],
     ...CONFIG.categories.map((cat) => [`resources/${cat.id}/`, "weekly", "0.7"]),
-    ...db.resources.filter((item) => item.status === "published").map((item) => [`resources/?slug=${encodeURIComponent(item.slug || item.id)}`, "weekly", "0.8", item.updatedAt])
+    ...db.resources.filter((item) => item.status === "published").map((item) => [`resources/?id=${encodeURIComponent(item.slug || item.id)}`, "weekly", "0.8", item.updatedAt])
   ];
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([loc, changefreq, priority, lastmod]) => `  <url>\n    <loc>${xmlEscape(`${CONFIG.site.url}/${loc}`)}</loc>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>${lastmod ? `\n    <lastmod>${xmlEscape(new Date(lastmod).toISOString())}</lastmod>` : ""}\n  </url>`).join("\n")}\n</urlset>\n`;
 }
@@ -1407,7 +1414,7 @@ function categoryPageHtml(category) {
 function resourcePageHtml(resource) {
   const title = resource.seoTitle || `${resource.name} | IconBuilds Resource`;
   const description = (resource.seoDescription || resource.shortDescription || stripHtml(resource.description) || CONFIG.seo.description).slice(0, 160);
-  const canonical = `${CONFIG.site.url}/resources/?slug=${encodeURIComponent(resource.slug || resource.id)}`;
+  const canonical = `${CONFIG.site.url}/resources/?id=${encodeURIComponent(resource.slug || resource.id)}`;
   const schema = structuredData(resource);
   const images = [resource.coverImage, ...(resource.showcaseImages || [])].filter(Boolean);
   return pageShell("resource", title, description, canonical, `
@@ -1443,9 +1450,9 @@ function pageShell(page, title, description, canonical, body) {
   <meta property="og:description" content="${htmlEscape(description)}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="${htmlEscape(canonical)}">
-  <link rel="stylesheet" href="/assets/css/styles.css?v=api-route-20260722">
-  <script src="/config.js" defer></script>
-  <script src="/assets/js/app.js?v=api-route-20260722" defer></script>
+  <link rel="stylesheet" href="/assets/css/styles.css?v=resource-id-categories-20260722">
+  <script src="/config.js?v=resource-id-categories-20260722" defer></script>
+  <script src="/assets/js/app.js?v=resource-id-categories-20260722" defer></script>
 </head>
 <body data-page="${page}">${body}</body>
 </html>`;
@@ -1470,7 +1477,7 @@ function structuredData(resource) {
       price: resource.free ? "0" : String((Number(resource.priceCents || 0) / 100).toFixed(2)),
       priceCurrency: (CONFIG.resource.currency || "USD").toUpperCase(),
       availability: "https://schema.org/InStock",
-      url: `${CONFIG.site.url}/resources/${resource.slug}/`
+      url: `${CONFIG.site.url}/resources/?id=${encodeURIComponent(resource.slug || resource.id)}`
     },
     softwareVersion: resource.currentVersion || "1.0.0",
     dateModified: resource.updatedAt || resource.createdAt
@@ -1487,8 +1494,8 @@ function structuredData(resource) {
 
 async function handleResourcePage(req, res, url) {
   const parts = url.pathname.split("/").filter(Boolean);
-  const slug = parts[0] === "resources" ? parts[1] : url.searchParams.get("slug");
-  const category = CONFIG.categories.find((item) => item.id === slug);
+  const slug = parts[0] === "resources" ? parts[1] : (url.searchParams.get("id") || url.searchParams.get("slug"));
+  const category = CONFIG.categories.find((item) => item.id === normalizeCategoryId(slug));
   if (category) return sendText(res, 200, categoryPageHtml(category), "text/html; charset=utf-8", { "Cache-Control": "public, max-age=120" });
   const { db } = await readStore();
   recomputeResourceStats(db);

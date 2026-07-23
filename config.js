@@ -7,8 +7,8 @@ const IconBuildsConfig = {
     basePath: "",
     logo: "/logo.png",
     favicon: "/logo.png",
-    supportEmail: "support@minestore.org",
-    discordUrl: "https://discord.gg/HFyUfk458c",
+    supportEmail: "icongens@gmail.com",
+    discordUrl: "https://discord.gg/RaRuBJCqPX",
     copyright: "IconBuilds is an IconRealms marketplace. Not affiliated with Mojang or Microsoft."
   },
   api: {
@@ -36,7 +36,7 @@ const IconBuildsConfig = {
   seo: {
     title: "IconBuilds | Premium Minecraft Resources by IconRealms",
     description:
-      "Browse official IconRealms Minecraft plugins, builds, server setups, Skripts, configurations, graphics, textures, models, and Discord resources.",
+      "Browse official IconRealms Minecraft plugins, builds, server setups, Skripts, configurations, textures and models, and Discord resources.",
     keywords: [
       "minecraft resources",
       "minecraft plugins",
@@ -55,7 +55,7 @@ const IconBuildsConfig = {
     heroEyebrow: "Minecraft Resource Marketplace",
     heroTitle: "Find the best resources for your Minecraft server",
     heroBody:
-      "Browse official IconRealms plugins, builds, setups, graphics, textures, models, Skripts, and Discord resources.",
+      "Browse official IconRealms plugins, builds, setups, textures and models, Skripts, and Discord resources.",
     searchPlaceholder: "Search resources...",
     recommendedTitle: "Recommended for You",
     recommendedFallback: "Official drops will appear here after an administrator publishes the first resources.",
@@ -73,16 +73,13 @@ const IconBuildsConfig = {
     { key: "categories", enabled: true }
   ],
   categories: [
+    { id: "builds", name: "Builds", icon: "blocks", description: "Minecraft maps, hubs, spawns, arenas, and builds." },
+    { id: "skripts", name: "Skripts", icon: "code", description: "Skript systems and gameplay features." },
     { id: "plugins", name: "Plugins", icon: "plug", description: "Custom Minecraft plugin resources and systems." },
     { id: "server-setups", name: "Server Setups", icon: "server", description: "Complete server setups, layouts, and launch packs." },
-    { id: "builds", name: "Builds", icon: "blocks", description: "Minecraft maps, hubs, spawns, arenas, and builds." },
     { id: "configurations", name: "Configurations", icon: "settings", description: "Configs for plugins, ranks, menus, crates, and systems." },
-    { id: "graphics", name: "Graphics", icon: "image", description: "Banners, icons, thumbnails, and brand assets." },
-    { id: "textures", name: "Textures", icon: "palette", description: "Texture packs, UI textures, icons, and custom assets." },
-    { id: "models", name: "Models", icon: "cube", description: "Custom item, mob, prop, and cosmetic models." },
-    { id: "skripts", name: "Skripts", icon: "code", description: "Skript systems and gameplay features." },
-    { id: "discord-bot-setups", name: "Discord Bot Setups", icon: "bot", description: "Discord bot files, commands, and server automation." },
-    { id: "discord-graphics", name: "Discord Graphics", icon: "spark", description: "Discord banners, icons, panels, and community artwork." }
+    { id: "textures-models", name: "Textures & Models", icon: "palette", description: "Texture packs, custom models, UI textures, icons, and visual resource assets." },
+    { id: "discord-bot-setups", name: "Discord Bot Setups", icon: "bot", description: "Discord bot files, commands, and server automation." }
   ],
   filters: {
     minecraftVersions: [

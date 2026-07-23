@@ -185,7 +185,7 @@ async function run() {
 
   const sitemap = await call("GET", "/sitemap.xml");
   assert.strictEqual(sitemap.statusCode, 200);
-  assert(sitemap.body.includes("https://minestore.org/resources/?slug=icon-test-resource"));
+  assert(sitemap.body.includes("https://minestore.org/resources/?id=icon-test-resource"));
   assert(!sitemap.body.includes("/admin/"));
 
   const userRegister = await call("POST", "/api?action=register", {

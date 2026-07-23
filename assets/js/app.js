@@ -39,6 +39,11 @@ function clean(value = "") {
   return String(value || "").trim();
 }
 
+function normalizeCategoryId(id = "") {
+  const value = clean(id);
+  return ["graphics", "textures", "models", "discord-graphics"].includes(value) ? "textures-models" : value;
+}
+
 function route(path = "/") {
   const base = CONFIG.site.basePath || "";
   if (/^https?:\/\//i.test(path)) return path;
@@ -148,16 +153,16 @@ function pageName() {
   const params = new URLSearchParams(location.search);
   const parts = location.pathname.split("/").filter(Boolean).map((part) => decodeURIComponent(part));
   if (parts[0] === "resources") {
-    if (params.get("slug")) return "resource";
+    if (params.get("id") || params.get("slug")) return "resource";
     if (!parts[1]) return "resources";
-    return CONFIG.categories.some((item) => item.id === parts[1]) ? "resources" : "resource";
+    return CONFIG.categories.some((item) => item.id === normalizeCategoryId(parts[1])) ? "resources" : "resource";
   }
   return bodyPage;
 }
 
 function pageSlug() {
   const params = new URLSearchParams(location.search);
-  const querySlug = clean(params.get("slug") || "");
+  const querySlug = clean(params.get("id") || params.get("slug") || "");
   if (querySlug) return querySlug;
   const parts = location.pathname.split("/").filter(Boolean);
   return parts[0] === "resources" && parts[1] ? decodeURIComponent(parts[1]) : "";
@@ -165,7 +170,8 @@ function pageSlug() {
 
 function categoryFromPath() {
   const slug = pageSlug();
-  return CONFIG.categories.some((item) => item.id === slug) ? slug : "";
+  const normalized = normalizeCategoryId(slug);
+  return CONFIG.categories.some((item) => item.id === normalized) ? normalized : "";
 }
 
 function setSeo(title, description, canonical, robots = "") {
@@ -198,16 +204,17 @@ function priceLabel(resource) {
 }
 
 function categoryById(id) {
-  return CONFIG.categories.find((item) => item.id === id) || { id, name: id || "Uncategorized", icon: "box", description: "" };
+  const normalized = normalizeCategoryId(id);
+  return CONFIG.categories.find((item) => item.id === normalized) || { id: normalized, name: normalized || "Uncategorized", icon: "box", description: "" };
 }
 
 function resourceUrl(resource, params = {}) {
-  const search = new URLSearchParams({ slug: resource.slug || resource.id, ...params });
+  const search = new URLSearchParams({ id: resource.slug || resource.id, ...params });
   return route(`/resources/?${search.toString()}`);
 }
 
 function categoryUrl(category) {
-  const id = typeof category === "string" ? category : category?.id;
+  const id = normalizeCategoryId(typeof category === "string" ? category : category?.id);
   return route(`/resources/${encodeURIComponent(id || "")}/`);
 }
 
@@ -242,7 +249,7 @@ function filterResources(resources, filters = {}) {
   return resources.filter((item) => {
     const haystack = [item.name, item.shortDescription, item.category, ...(item.tags || [])].join(" ").toLowerCase();
     if (q && !haystack.includes(q)) return false;
-    if (filters.category && item.category !== filters.category) return false;
+    if (filters.category && normalizeCategoryId(item.category) !== normalizeCategoryId(filters.category)) return false;
     if (filters.price === "free" && !item.free) return false;
     if (filters.price === "paid" && (item.free || Number(item.priceCents || 0) <= 0)) return false;
     if (filters.rating && Number(item.averageRating || 0) < Number(filters.rating)) return false;
@@ -528,7 +535,7 @@ function renderMarketplace(state, kind = "") {
 }
 
 function renderResourceDetail(state) {
-  const slug = pageSlug() || new URLSearchParams(location.search).get("slug") || "";
+  const slug = pageSlug();
   const resource = (state.resources || []).find((item) => item.slug === slug || item.id === slug);
   if (!resource || resource.status !== "published") {
     layout(state, `<div class="notice">That resource could not be found or has not been published.</div>`);
@@ -537,7 +544,7 @@ function renderResourceDetail(state) {
   const tab = new URLSearchParams(location.search).get("tab") || "overview";
   const owned = ownsResource(state, resource.id);
   const images = [resource.coverImage, ...(resource.showcaseImages || [])].filter(Boolean);
-  setSeo(resource.seoTitle || `${resource.name} | IconBuilds`, resource.seoDescription || resource.shortDescription || CONFIG.seo.description, `${CONFIG.site.url}/resources/?slug=${encodeURIComponent(resource.slug || resource.id)}`, CONFIG.seo.robotsIndex);
+  setSeo(resource.seoTitle || `${resource.name} | IconBuilds`, resource.seoDescription || resource.shortDescription || CONFIG.seo.description, `${CONFIG.site.url}/resources/?id=${encodeURIComponent(resource.slug || resource.id)}`, CONFIG.seo.robotsIndex);
   layout(state, `<section class="section">
     <nav class="muted"><a href="${route("/resources/")}">Resources</a> / ${escapeHtml(categoryById(resource.category).name)} / ${escapeHtml(resource.name)}</nav>
     <div class="resource-layout">
@@ -557,7 +564,7 @@ function renderResourceDetail(state) {
             ${(resource.serverSoftware || []).slice(0, 4).map((item) => `<span class="badge">${escapeHtml(item)}</span>`).join("")}
           </div>
           <div class="form-actions" style="margin-top:14px">
-            ${resource.free ? `<button class="button primary" data-add-free="${resource.id}">${owned ? "In Library" : "Add Free Resource"}</button>` : `<button class="button primary" data-checkout="${resource.id}">${owned ? "Purchased" : "Buy with Stripe"}</button>`}
+            ${resource.free ? `<button class="button primary" data-add-free="${resource.id}">${owned ? "In Library" : "Add Free Resource"}</button>` : `<button class="button primary" data-checkout="${resource.id}">${owned ? "Purchased" : "Purchase"}</button>`}
             <button class="button" data-download="${resource.id}" ${owned ? "" : "disabled"}>Download</button>
             <button class="button" data-favorite="${resource.id}">Favorite</button>
           </div>
@@ -961,7 +968,7 @@ function adminResourceForm(resource = {}) {
     <input type="hidden" name="existingUpdates" value="${escapeHtml(JSON.stringify(existingUpdates))}">
     <div class="form-grid"><div class="field"><label>Name</label><input class="input" name="name" value="${escapeHtml(resource.name || "")}" required></div><div class="field"><label>Slug</label><input class="input" name="slug" value="${escapeHtml(resource.slug || "")}" placeholder="auto-generated if empty"></div></div>
     <div class="field"><label>Short description</label><input class="input" name="shortDescription" value="${escapeHtml(resource.shortDescription || "")}" required><p class="field-help">This also becomes the SEO description automatically.</p></div>
-    <div class="form-grid"><div class="field"><label>Category</label><select class="select" name="category">${CONFIG.categories.map((cat) => `<option value="${cat.id}" ${resource.category === cat.id ? "selected" : ""}>${escapeHtml(cat.name)}</option>`).join("")}</select></div><div class="field"><label>Ownership label</label><select class="select" name="ownershipLabel">${CONFIG.resource.ownershipLabels.map((label) => `<option ${resource.ownershipLabel === label ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}</select></div></div>
+    <div class="form-grid"><div class="field"><label>Category</label><select class="select" name="category">${CONFIG.categories.map((cat) => `<option value="${cat.id}" ${normalizeCategoryId(resource.category) === cat.id ? "selected" : ""}>${escapeHtml(cat.name)}</option>`).join("")}</select></div><div class="field"><label>Ownership label</label><select class="select" name="ownershipLabel">${CONFIG.resource.ownershipLabels.map((label) => `<option ${resource.ownershipLabel === label ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}</select></div></div>
     <div class="form-grid"><div class="field"><label>Free or paid</label><select class="select" name="free"><option value="true" ${resource.free ? "selected" : ""}>Free</option><option value="false" ${!resource.free ? "selected" : ""}>Paid</option></select></div><div class="field"><label>Price</label><input class="input" name="price" type="number" min="0" step="0.01" value="${escapeHtml(priceInputValue(resource))}" placeholder="1.99"><p class="field-help">Use normal dollars, like 1.99. IconBuilds converts it internally.</p></div></div>
     <div class="form-grid"><div class="field"><label>Status</label><select class="select" name="status"><option value="draft" ${resource.status !== "published" ? "selected" : ""}>Draft</option><option value="published" ${resource.status === "published" ? "selected" : ""}>Published</option></select></div><label class="check-row"><input type="checkbox" name="featured" ${resource.featured ? "checked" : ""}> Featured</label></div>
     <div class="field"><label>Cover image URL</label><input class="input" name="coverImage" value="${escapeHtml(resource.coverImage || "")}"></div>
@@ -1141,12 +1148,200 @@ function renderCheckoutSuccess(state) {
   });
 }
 
+function legalPages() {
+  return {
+    terms: {
+      title: "Terms of Service",
+      description: "IconBuilds terms for accounts, purchases, downloads, reviews, resource licenses, refunds, and marketplace conduct.",
+      updated: "July 22, 2026",
+      intro: [
+        "Welcome to IconBuilds, the official marketplace operated for IconRealms resources. By creating an account, purchasing, downloading, reviewing, or otherwise using IconBuilds, you agree to these terms and the policies linked from this website.",
+        "If you do not agree with these terms, please do not use IconBuilds."
+      ],
+      sections: [
+        {
+          title: "1. About IconBuilds",
+          paragraphs: ["IconBuilds distributes free and premium digital resources created, owned, licensed, or approved by IconRealms. Resources may include Minecraft plugins, Skripts, server setups, builds, configurations, textures, models, Discord bot setups, Discord graphics, and related digital content."],
+          bullets: ["IconBuilds is not a public seller marketplace.", "Regular users cannot upload, publish, or sell resources.", "All resource management is restricted to authorized administrators."]
+        },
+        {
+          title: "2. Accounts and Verification",
+          paragraphs: ["You are responsible for keeping your account secure and for all activity that happens under your account. Some account features require a verified email address before access is granted."],
+          bullets: ["Use accurate registration information.", "Do not share, sell, transfer, or impersonate accounts.", "Do not abuse verification, login, or password reset systems.", "IconBuilds may restrict, suspend, or remove accounts that violate these terms."]
+        },
+        {
+          title: "3. Purchases, Downloads, and Licenses",
+          paragraphs: ["Resources are digital goods. Purchasing or downloading a resource gives you a license to use that resource under the permissions shown on IconBuilds or inside the resource files. It does not transfer ownership of the underlying content."],
+          bullets: ["Do not redistribute, leak, resell, reupload, or share protected download links.", "Do not bypass download protections, payment checks, or license restrictions.", "Free resources may still require login, account library access, and acceptance of resource terms.", "Paid access is granted only after payment status is verified by the backend."]
+        },
+        {
+          title: "4. Refunds",
+          paragraphs: ["Because resources are digital goods, purchases are generally final once access has been granted. Refund requests may be reviewed case by case when there is a duplicate purchase, accidental purchase, unresolved access issue, or a significant technical issue that cannot reasonably be fixed."],
+          bullets: ["Refunds are generally not provided for buyer's remorse.", "Refunds are generally not provided for disclosed compatibility limits.", "Refund abuse, chargeback abuse, or payment fraud may lead to account restrictions."]
+        },
+        {
+          title: "5. Resource Usage Rules",
+          paragraphs: ["Unless a resource says otherwise, IconBuilds resources may be used on servers or projects you control. You may not use IconBuilds resources to build unauthorized distributions, competing leaks, or unofficial storefronts."],
+          bullets: ["Do not claim IconBuilds or IconRealms resources as your own.", "Do not remove copyright notices or license information.", "Do not sell modified versions without permission.", "Do not upload protected resources to other marketplaces or websites."]
+        },
+        {
+          title: "6. Reviews and Community Conduct",
+          paragraphs: ["Reviews, ratings, reports, usernames, and support messages must be honest, relevant, and respectful. IconBuilds may moderate content that breaks these terms or the Community Guidelines."],
+          bullets: ["No harassment, threats, hate speech, slurs, spam, scams, malicious links, or personal information.", "Do not post false or misleading reviews.", "Do not manipulate ratings, reports, downloads, or purchases."]
+        },
+        {
+          title: "7. Security and Prohibited Activity",
+          paragraphs: ["You may not attempt to compromise, disrupt, scrape, reverse engineer, exploit, or gain unauthorized access to IconBuilds, its API, admin tools, accounts, payment flows, or download systems."],
+          bullets: ["Do not upload or link malware, suspicious downloads, pirated content, or stolen content.", "Do not abuse rate limits, sessions, tokens, or backend protections.", "Security abuse may result in immediate termination and further action where appropriate."]
+        },
+        {
+          title: "8. Intellectual Property",
+          paragraphs: ["IconBuilds branding, website content, resource files, images, descriptions, systems, and marketplace materials belong to IconRealms, IconBuilds, or their licensors unless stated otherwise. Downloading or purchasing a resource does not transfer ownership of intellectual property."]
+        },
+        {
+          title: "9. Availability, Updates, and Changes",
+          paragraphs: ["IconBuilds is provided on an as-is and as-available basis. We may update resources, change prices, remove outdated resources, place services under maintenance, or discontinue features when needed. These terms may be updated periodically, and continued use after changes means you accept the updated terms."]
+        },
+        {
+          title: "10. Contact",
+          paragraphs: [`Questions about these terms, refunds, account access, or resource support can be sent through the official IconBuilds support channels or by emailing ${CONFIG.site.supportEmail}.`]
+        }
+      ]
+    },
+    privacy: {
+      title: "Privacy Policy",
+      description: "How IconBuilds collects, uses, protects, and retains account, verification, purchase, download, review, and support information.",
+      updated: "July 22, 2026",
+      intro: [
+        "IconBuilds respects your privacy and collects only the information reasonably needed to operate accounts, verification, purchases, downloads, reviews, support, moderation, and abuse-prevention systems.",
+        "IconBuilds does not sell your personal information."
+      ],
+      sections: [
+        {
+          title: "1. Information We Collect",
+          paragraphs: ["Depending on how you use IconBuilds, we may collect account, authentication, marketplace, support, moderation, analytics, and security information."],
+          bullets: ["Username, email address, password hashes, profile details, and connected Google account details when used.", "Email verification status, login activity, password reset activity, session information, and security events.", "Purchases, downloads, account library items, favorites, reviews, reports, support requests, and notification preferences.", "IP address, browser, device, approximate location from IP, diagnostics, performance, and usage analytics."]
+        },
+        {
+          title: "2. How We Use Information",
+          paragraphs: ["We use information to run IconBuilds safely and reliably."],
+          bullets: ["Create and manage accounts.", "Verify emails and protect login sessions.", "Process purchases, receipts, resource libraries, and protected downloads.", "Respond to support requests.", "Moderate reviews and reports.", "Prevent fraud, spam, malware, abuse, and unauthorized access.", "Improve performance, search, navigation, and marketplace reliability."]
+        },
+        {
+          title: "3. Payments, Google Login, and Email",
+          paragraphs: ["IconBuilds does not intentionally store full credit card numbers. Payments are handled by payment providers, and their privacy practices apply to payment details they process. If you sign in with Google, we may receive your email, name, profile picture, and verified-email status when provided by Google. Verification, password reset, receipt, security, and important service emails may be sent through trusted email providers."]
+        },
+        {
+          title: "4. Cookies, Sessions, and Analytics",
+          paragraphs: ["IconBuilds uses cookies, local storage, and session technologies to keep users logged in, remember preferences, protect accounts, and improve site functionality. Analytics may include page visits, searches, resource popularity, device/browser statistics, performance data, and marketplace usage trends. We prefer aggregated or anonymized data where practical."]
+        },
+        {
+          title: "5. Sharing Information",
+          paragraphs: ["We share limited information only when reasonably necessary to operate IconBuilds, protect users, comply with law, or work with trusted service providers."],
+          bullets: ["Hosting and serverless providers.", "Authentication and email providers.", "Payment processors.", "File storage and download providers.", "Security, fraud-prevention, moderation, and analytics services.", "Legal or safety disclosures when required or appropriate."]
+        },
+        {
+          title: "6. Security and Retention",
+          paragraphs: ["We use reasonable safeguards such as password hashing, HTTPS, protected sessions, input validation, role-based access controls, rate limiting, moderation, and download protections. No online system can be guaranteed perfectly secure."],
+          bullets: ["We retain information as long as needed for accounts, purchases, downloads, dispute resolution, legal obligations, security, fraud prevention, and marketplace operation.", "Some records may remain after account deletion when needed for transaction records, abuse prevention, security investigations, or legal compliance."]
+        },
+        {
+          title: "7. Your Choices",
+          paragraphs: ["You may request account help, email changes, or account deletion through support when available. Browser cookie settings can be changed by you, but disabling cookies may break login, account, checkout, or download features."]
+        },
+        {
+          title: "8. Children's Privacy",
+          paragraphs: ["IconBuilds is not intended for people who are not permitted to use online services under applicable law without parent or guardian consent. If we learn that information was collected in violation of applicable laws for minors, we will take reasonable steps to address it."]
+        },
+        {
+          title: "9. Changes and Contact",
+          paragraphs: [`This Privacy Policy may be updated as IconBuilds changes. Questions about privacy or your information can be sent through official support channels or by emailing ${CONFIG.site.supportEmail}.`]
+        }
+      ]
+    },
+    guidelines: {
+      title: "Community Guidelines",
+      description: "IconBuilds rules for respectful reviews, reports, usernames, marketplace conduct, resource use, and moderation.",
+      updated: "July 22, 2026",
+      intro: [
+        "IconBuilds should stay useful, safe, and professional for people browsing, downloading, reviewing, and getting support for official IconRealms resources.",
+        "These guidelines apply to reviews, ratings, reports, usernames, profile content, support requests, and any other user-submitted content."
+      ],
+      sections: [
+        {
+          title: "1. Be Respectful",
+          paragraphs: ["Constructive feedback is welcome. Personal attacks are not."],
+          bullets: ["Do not harass, bully, threaten, intimidate, or target others.", "Do not use hate speech, slurs, discrimination, or explicit personal attacks.", "Do not impersonate users, staff, IconBuilds, IconRealms, or other organizations.", "Do not intentionally disrupt support or community interactions."]
+        },
+        {
+          title: "2. Reviews and Ratings",
+          paragraphs: ["Reviews should help other users understand the resource. Keep them honest, relevant, and tied to your real experience."],
+          bullets: ["Share useful feedback, compatibility notes, bug reports, or suggestions.", "Do not post spam, advertising, fake claims, rating manipulation, threats, scams, malicious links, or personal information.", "Do not submit multiple reviews to manipulate a resource's rating."]
+        },
+        {
+          title: "3. Usernames and Profile Information",
+          paragraphs: ["Usernames and profile content must be appropriate for the marketplace."],
+          bullets: ["No hate speech, slurs, excessive profanity, explicit content, impersonation, malicious text, misleading claims, or personal information.", "IconBuilds may modify, restrict, or remove inappropriate names or profile content when necessary."]
+        },
+        {
+          title: "4. Prohibited Content",
+          paragraphs: ["The following content is not allowed anywhere on IconBuilds."],
+          bullets: ["Harassment, hate speech, threats, scams, spam, malware, dangerous links, pirated content, stolen resources, copyright infringement, sexual content, excessive profanity, personal information, or attempts to bypass marketplace protections."]
+        },
+        {
+          title: "5. Marketplace Conduct",
+          paragraphs: ["Use IconBuilds and its resources responsibly."],
+          bullets: ["Do not redistribute, leak, resell, or reupload resources.", "Do not abuse downloads, purchases, refunds, reviews, or reports.", "Do not manipulate marketplace statistics.", "Do not attempt unauthorized access to admin systems, accounts, payment flows, APIs, or protected downloads.", "Do not exploit vulnerabilities or interfere with website functionality."]
+        },
+        {
+          title: "6. Reports and Moderation",
+          paragraphs: ["Reports help keep the marketplace clean, but false or abusive reporting is not allowed. IconBuilds may use automated and manual moderation to filter, flag, hide, remove, restore, or investigate content."],
+          bullets: ["Repeated violations may lead to content removal, review restrictions, temporary suspension, permanent account termination, or revoked marketplace access.", "Severe abuse may be acted on immediately."]
+        },
+        {
+          title: "7. Intellectual Property",
+          paragraphs: ["Respect the work behind IconBuilds resources. Do not claim ownership of IconBuilds resources, remove licensing notices, share protected files, or misrepresent where a resource came from."]
+        },
+        {
+          title: "8. Changes",
+          paragraphs: ["These guidelines may be updated as IconBuilds grows. Continued use of the site after changes means you accept the updated guidelines."]
+        }
+      ]
+    }
+  };
+}
+
+function renderPolicyPage(state, page) {
+  setSeo(`${page.title} | IconBuilds`, page.description, `${CONFIG.site.url}/${page.title === "Community Guidelines" ? "guidelines" : page.title.toLowerCase().split(" ")[0]}/`, CONFIG.seo.robotsIndex);
+  layout(state, `<section class="section policy-page">
+    <div class="panel">
+      <p class="eyebrow">IconBuilds Policy</p>
+      <h1 class="section-title">${escapeHtml(page.title)}</h1>
+      <p class="policy-updated">Last Updated: ${escapeHtml(page.updated)}</p>
+      <div class="rich-text">
+        ${(page.intro || []).map((item) => `<p>${escapeHtml(item)}</p>`).join("")}
+        ${(page.sections || []).map(renderPolicySection).join("")}
+      </div>
+    </div>
+  </section>`);
+}
+
+function renderPolicySection(section) {
+  return `<section class="policy-section">
+    <h2>${escapeHtml(section.title)}</h2>
+    ${(section.paragraphs || []).map((item) => `<p>${escapeHtml(item)}</p>`).join("")}
+    ${section.bullets?.length ? `<ul>${section.bullets.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : ""}
+  </section>`;
+}
+
 function renderStaticPage(state, key) {
+  const policies = legalPages();
+  if (policies[key]) {
+    renderPolicyPage(state, policies[key]);
+    return;
+  }
   const pages = {
-    terms: ["Terms of Service", "Use IconBuilds responsibly. Resources are distributed by IconRealms, accounts must remain secure, and purchases/downloads must not be abused or redistributed without permission."],
-    privacy: ["Privacy Policy", "IconBuilds stores the information needed for accounts, verification, purchases, downloads, reviews, reports, support, and abuse prevention. We do not sell personal information."],
     refund: ["Refund Policy", "Digital resource purchases may be reviewed for refunds when access fails, the resource is materially misrepresented, or support cannot resolve a verified issue."],
-    guidelines: ["Community Guidelines", "Reviews, reports, names, and comments must remain honest, safe, and respectful. Spam, scams, harassment, malware, piracy, and personal information are not allowed."],
     support: ["Support", `Need help with purchases, downloads, verification, or resource access? Email ${CONFIG.site.supportEmail} or join the IconRealms Discord.`],
     "not-found": ["Page Not Found", "That page does not exist or the resource has not been published."]
   };
