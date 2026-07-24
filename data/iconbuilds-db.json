@@ -171,6 +171,70 @@
       "reviewCount": 0,
       "downloadCount": 0,
       "purchaseCount": 0
+    },
+    {
+      "id": "res_8457bfce-572d-4975-a4c9-143cadbc58ce",
+      "name": "Report Skript",
+      "slug": "report-skript",
+      "shortDescription": "Report Skript, Lets players use /report to instantly alert staff in-game and on Discord",
+      "description": "Player Report Skript – A fast and reliable reporting system for Minecraft servers.\nThis Skript allows players to easily report rule-breakers or suspicious activity with a single command. Reports are instantly sent to staff in-game and simultaneously forwarded to a linked Discord channel, ensuring your moderation team never misses an alert.\n\n\nFeatures:\nSimple /report <player> <reason> command for players.\nReal-time in-game notifications to all online staff members.\nDiscord integration (via SkCord) to send formatted alerts to your moderation channel.\nClear formatting with player names, reasons, last messages, last kills, ping, and timestamps.\n\nKeep your community safe by giving players a quick, reliable way to alert staff whether they’re online or offline.\n\nKnown servers using this or a changed version of this:\nBoxCorp\nBrokits.net/brokits.minehut.gg (java x bedrock)\nMaceLegends/macelegends.minehut.gg",
+      "category": "skripts",
+      "tags": [
+        "skript",
+        "report",
+        "protection"
+      ],
+      "free": true,
+      "priceCents": 0,
+      "currency": "usd",
+      "ownershipLabel": "IconRealms",
+      "coverImage": "https://i.imgur.com/LNpEOFy.png",
+      "showcaseImages": [],
+      "youtubeUrl": "",
+      "fileUrl": "https://drive.google.com/uc?export=download&id=1XcpdlrAkhDJC8PNe-FQGYd5PJzOobpyO",
+      "currentVersion": "1.0.0",
+      "dependencies": [
+        {
+          "name": "Skbee",
+          "description": "",
+          "required": true,
+          "url": "",
+          "version": ""
+        },
+        {
+          "name": "SKcord",
+          "description": "",
+          "required": true,
+          "url": "",
+          "version": ""
+        }
+      ],
+      "updates": [],
+      "minecraftVersions": [
+        "Any"
+      ],
+      "serverSoftware": [
+        "Any"
+      ],
+      "compatibility": [
+        "Java"
+      ],
+      "installation": "",
+      "supportInfo": "",
+      "notices": "",
+      "featured": false,
+      "status": "published",
+      "seoTitle": "Report Skript | IconBuilds",
+      "seoDescription": "Report Skript, Lets players use /report to instantly alert staff in-game and on Discord",
+      "canonicalUrl": "https://minestore.org/resources/?id=report-skript",
+      "imageAlt": "Report Skript resource preview",
+      "updatedAt": "2026-07-24T07:58:41.236Z",
+      "createdAt": "2026-07-24T07:58:41.236Z",
+      "publishedAt": "2026-07-24T07:58:41.236Z",
+      "averageRating": 0,
+      "reviewCount": 0,
+      "downloadCount": 0,
+      "purchaseCount": 0
     }
   ],
   "reviews": [],
@@ -289,6 +353,13 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_3070d07f-8b4f-4f8c-b151-8495f82fdbfe",
       "createdAt": "2026-07-24T07:45:23.763Z"
+    },
+    {
+      "id": "audit_827ac1dc-6c41-4d63-8eb5-9d264aab6e8b",
+      "type": "save-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_8457bfce-572d-4975-a4c9-143cadbc58ce",
+      "createdAt": "2026-07-24T07:58:41.236Z"
     }
   ],
   "verificationChallenges": [
