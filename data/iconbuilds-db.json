@@ -111,7 +111,15 @@
   "reviews": [],
   "purchases": [],
   "downloads": [],
-  "library": [],
+  "library": [
+    {
+      "id": "lib_0ee76c97-7df3-420b-8586-1cabb7b72ca7",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
+      "source": "free",
+      "createdAt": "2026-07-24T07:19:18.082Z"
+    }
+  ],
   "favorites": [
     {
       "id": "fav_73dbd41f-0ebf-47d5-9b63-7dd465aa82ea",
@@ -180,6 +188,13 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
       "createdAt": "2026-07-24T07:19:08.317Z"
+    },
+    {
+      "id": "audit_e6d1eaf4-06b7-4bda-99e2-872e4a470f6e",
+      "type": "add-free-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
+      "createdAt": "2026-07-24T07:19:18.082Z"
     }
   ],
   "verificationChallenges": [
