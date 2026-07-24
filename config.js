@@ -25,11 +25,11 @@ const IconBuildsConfig = {
       border: "rgba(148, 163, 184, .22)",
       text: "#f8fbff",
       muted: "#9fb0c5",
-      blue: "#734f96",
-      cyan: "#cdb9e6",
-      emerald: "#8d6bb0",
-      violet: "#9d7bc4",
-      pink: "#ec4899",
+      blue: "#f97316",
+      cyan: "#fde68a",
+      emerald: "#fbbf24",
+      violet: "#f43f5e",
+      pink: "#fb7185",
       amber: "#f59e0b"
     }
   },
