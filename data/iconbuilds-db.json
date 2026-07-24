@@ -104,13 +104,21 @@
       "publishedAt": "2026-07-22T11:52:14.597Z",
       "averageRating": 0,
       "reviewCount": 0,
-      "downloadCount": 0,
+      "downloadCount": 1,
       "purchaseCount": 0
     }
   ],
   "reviews": [],
   "purchases": [],
-  "downloads": [],
+  "downloads": [
+    {
+      "id": "down_c424c739-8abd-468b-8fab-8c1bd4aad599",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
+      "ipHash": "22a23837551ff27e08b89868cb78e4a1",
+      "createdAt": "2026-07-24T07:19:26.368Z"
+    }
+  ],
   "library": [
     {
       "id": "lib_0ee76c97-7df3-420b-8586-1cabb7b72ca7",
