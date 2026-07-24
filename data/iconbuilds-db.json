@@ -388,6 +388,13 @@
       "userId": "usr_07b82c34-7b7a-4d98-9172-867aea29b31d",
       "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
       "createdAt": "2026-07-24T18:49:14.916Z"
+    },
+    {
+      "id": "audit_8142691f-c631-455a-b27b-aa0b621b4e24",
+      "type": "add-free-resource",
+      "userId": "usr_07b82c34-7b7a-4d98-9172-867aea29b31d",
+      "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
+      "createdAt": "2026-07-24T18:49:20.182Z"
     }
   ],
   "verificationChallenges": [
