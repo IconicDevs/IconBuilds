@@ -104,7 +104,7 @@
       "publishedAt": "2026-07-22T11:52:14.597Z",
       "averageRating": 0,
       "reviewCount": 0,
-      "downloadCount": 1,
+      "downloadCount": 2,
       "purchaseCount": 0
     },
     {
@@ -246,6 +246,13 @@
       "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
       "ipHash": "22a23837551ff27e08b89868cb78e4a1",
       "createdAt": "2026-07-24T07:19:26.368Z"
+    },
+    {
+      "id": "down_4405b50b-e1ce-4074-84b5-bc25747db5f4",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
+      "ipHash": "22a23837551ff27e08b89868cb78e4a1",
+      "createdAt": "2026-07-24T10:38:35.291Z"
     }
   ],
   "library": [
