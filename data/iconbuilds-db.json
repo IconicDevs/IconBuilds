@@ -106,6 +106,71 @@
       "reviewCount": 0,
       "downloadCount": 1,
       "purchaseCount": 0
+    },
+    {
+      "id": "res_3070d07f-8b4f-4f8c-b151-8495f82fdbfe",
+      "name": "HeadHunt",
+      "slug": "headhunt",
+      "shortDescription": "A all in one HeadHunt skript! Very customizeable!",
+      "description": "eadHunt is a lightweight and highly configurable collectible system for Minecraft servers. Hide heads throughout your world and reward players for finding them all. Perfect for hubs, RPG servers, SMPs, Lifesteal servers, seasonal events, and community challenges.\n\nPlayers can track their progress using /headhunt, while administrators can easily create, remove, teleport to, and reset collectible heads in-game.\n\nFeatures\nCollectible head system.\nFully configurable rewards.\nIndividual player progression tracking.\nSupports both online and offline player resets.\nAutomatically prevents players from collecting the same head twice.\nIn-game management commands.\nTab completion support.\nLightweight and easy to configure.\nUses UUID-based player data.\nSuitable for permanent or seasonal events.\nCommands\n\nPlayer Commands\n\n/headhunt - View your current progress.\n\nAdmin Commands\n\n/headhunt set <id> - Register a new collectible head.\n/headhunt remove <id> - Remove a registered head.\n/headhunt tp <id> - Teleport to a registered head.\n/headhunt list - View all registered heads.\n/headhunt reset <player> - Reset a player's progress.\n/headhunt resetall - Reset everyone's progress.\nPermissions\nheadhunt.admin - Access to all administrative commands.\nHow It Works\n\nSimply place player heads around your server and register them using /headhunt set <id>. When players discover a head, it is permanently recorded and cannot be collected again unless their progress is reset.\n\nOnce all collectible heads have been found, players can automatically receive configurable rewards such as:\n\nCrate Keys\nCredits\nCustom Items\nEconomy Rewards\nConsole Commands\nAnd more!\n\nThe default configuration rewards players after finding all 25 heads, but the system can easily be modified to fit your server's needs.\n\nWhether you're creating a scavenger hunt, seasonal event, or permanent collectible system, HeadHunt provides a simple and professional solution that's ready to use out of the box.",
+      "category": "skripts",
+      "tags": [
+        "Skript",
+        "headhunt",
+        "utilities"
+      ],
+      "free": true,
+      "priceCents": 0,
+      "currency": "usd",
+      "ownershipLabel": "IconRealms Development",
+      "coverImage": "https://i.imgur.com/FjWvrfT.png",
+      "showcaseImages": [],
+      "youtubeUrl": "",
+      "fileUrl": "https://drive.google.com/uc?export=download&id=1cwRfO39fvPiV4jZZBAfL_-SArcDxWjic",
+      "currentVersion": "1.0.0",
+      "dependencies": [
+        {
+          "name": "Skbee",
+          "description": "",
+          "required": true,
+          "url": "",
+          "version": ""
+        }
+      ],
+      "updates": [
+        {
+          "version": "1.0.0",
+          "title": "Release",
+          "date": "2026-07-24",
+          "changelog": "Added the skript",
+          "fileLabel": ""
+        }
+      ],
+      "minecraftVersions": [
+        "Any"
+      ],
+      "serverSoftware": [
+        "Any"
+      ],
+      "compatibility": [
+        "Java"
+      ],
+      "installation": "",
+      "supportInfo": "",
+      "notices": "",
+      "featured": false,
+      "status": "published",
+      "seoTitle": "HeadHunt | IconBuilds",
+      "seoDescription": "A all in one HeadHunt skript! Very customizeable!",
+      "canonicalUrl": "https://minestore.org/resources/?id=headhunt",
+      "imageAlt": "HeadHunt resource preview",
+      "updatedAt": "2026-07-24T07:35:58.623Z",
+      "createdAt": "2026-07-24T07:35:58.623Z",
+      "publishedAt": "2026-07-24T07:35:58.623Z",
+      "averageRating": 0,
+      "reviewCount": 0,
+      "downloadCount": 0,
+      "purchaseCount": 0
     }
   ],
   "reviews": [],
@@ -203,6 +268,13 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
       "createdAt": "2026-07-24T07:19:18.082Z"
+    },
+    {
+      "id": "audit_7ffc240a-2ca3-4729-86be-e545114f1c17",
+      "type": "save-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_3070d07f-8b4f-4f8c-b151-8495f82fdbfe",
+      "createdAt": "2026-07-24T07:35:58.623Z"
     }
   ],
   "verificationChallenges": [
