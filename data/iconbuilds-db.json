@@ -191,6 +191,13 @@
       "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
       "source": "free",
       "createdAt": "2026-07-24T07:19:18.082Z"
+    },
+    {
+      "id": "lib_111dd28a-9999-4f91-aace-cc342f1177d8",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_3070d07f-8b4f-4f8c-b151-8495f82fdbfe",
+      "source": "free",
+      "createdAt": "2026-07-24T07:45:23.763Z"
     }
   ],
   "favorites": [
@@ -275,6 +282,13 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_3070d07f-8b4f-4f8c-b151-8495f82fdbfe",
       "createdAt": "2026-07-24T07:35:58.623Z"
+    },
+    {
+      "id": "audit_56678d19-5c7b-4e5f-bf08-5f80a5a10a35",
+      "type": "add-free-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_3070d07f-8b4f-4f8c-b151-8495f82fdbfe",
+      "createdAt": "2026-07-24T07:45:23.763Z"
     }
   ],
   "verificationChallenges": [
