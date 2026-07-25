@@ -178,6 +178,11 @@ function setSeo(title, description, canonical, robots = "") {
   if (title) document.title = title;
   setMeta("description", description);
   if (robots) setMeta("robots", robots);
+  setPropertyMeta("og:title", title);
+  setPropertyMeta("og:description", description);
+  setPropertyMeta("og:url", canonical);
+  setMeta("twitter:title", title);
+  setMeta("twitter:description", description);
   let link = document.querySelector("link[rel='canonical']");
   if (!link) {
     link = document.createElement("link");
@@ -198,6 +203,17 @@ function setMeta(name, content) {
   node.content = content;
 }
 
+function setPropertyMeta(property, content) {
+  if (!content) return;
+  let node = document.querySelector(`meta[property="${property}"]`);
+  if (!node) {
+    node = document.createElement("meta");
+    node.setAttribute("property", property);
+    document.head.append(node);
+  }
+  node.content = content;
+}
+
 function priceLabel(resource) {
   if (!resource || resource.free || Number(resource.priceCents || 0) <= 0) return "Free";
   return new Intl.NumberFormat("en-US", { style: "currency", currency: resource.currency || CONFIG.resource.currency || "USD" }).format(Number(resource.priceCents || 0) / 100);
@@ -208,9 +224,94 @@ function categoryById(id) {
   return CONFIG.categories.find((item) => item.id === normalized) || { id: normalized, name: normalized || "Uncategorized", icon: "box", description: "" };
 }
 
+function compactText(value = "") {
+  const div = document.createElement("div");
+  div.innerHTML = String(value || "");
+  return (div.textContent || div.innerText || String(value || ""))
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, " $1 ")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, " $1 ")
+    .replace(/[`*_>#]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function clipMeta(value = "", limit = 160) {
+  const text = compactText(value);
+  if (text.length <= limit) return text;
+  const clipped = text.slice(0, limit - 1).replace(/\s+\S*$/, "").replace(/[,\s;:.-]+$/, "");
+  return `${clipped}.`;
+}
+
+function siteUrl(pathname = "") {
+  return `${CONFIG.site.url.replace(/\/+$/, "")}/${String(pathname || "").replace(/^\/+/, "")}`;
+}
+
+function resourcePublicId(resource = {}) {
+  return resource.slug || resource.id || "";
+}
+
+function resourcePath(resource = {}) {
+  return `/resources/${encodeURIComponent(resourcePublicId(resource))}/`;
+}
+
+function resourceCanonical(resource = {}) {
+  return siteUrl(resourcePath(resource));
+}
+
+function categorySeo(category = {}) {
+  const name = category.name || "Minecraft Resources";
+  return {
+    title: category.seoTitle || `${name} | Minecraft Resources | IconBuilds`,
+    description: category.seoDescription || `Browse official IconRealms ${name.toLowerCase()} for Minecraft servers and Discord communities on IconBuilds.`
+  };
+}
+
+function resourceSeoTitle(resource = {}) {
+  const category = categoryById(resource.category);
+  const categoryLabels = {
+    builds: "Minecraft Build",
+    skripts: "Minecraft Skript",
+    plugins: "Minecraft Plugin",
+    "server-setups": "Minecraft Server Setup",
+    configurations: "Minecraft Configuration",
+    "textures-models": "Minecraft Textures & Models",
+    "discord-bot-setups": "Discord Bot Setup"
+  };
+  const version = meaningfulSeoValues(resource.minecraftVersions).slice(0, 2).join(", ");
+  return clipMeta(`${resource.name} - ${categoryLabels[category.id] || category.name}${version ? ` for ${version}` : ""} | IconBuilds`, 70);
+}
+
+function resourceSeoDescription(resource = {}) {
+  const category = categoryById(resource.category);
+  const categoryPhrases = {
+    builds: "Minecraft build",
+    skripts: "Minecraft Skript",
+    plugins: "Minecraft plugin",
+    "server-setups": "Minecraft server setup",
+    configurations: "Minecraft configuration",
+    "textures-models": "Minecraft textures and models",
+    "discord-bot-setups": "Discord bot setup"
+  };
+  const version = meaningfulSeoValues(resource.minecraftVersions).slice(0, 3).join(", ");
+  const software = meaningfulSeoValues(resource.serverSoftware).slice(0, 3).join(", ");
+  const tags = (resource.tags || []).filter(Boolean).slice(0, 4).join(", ");
+  const qualifiers = [version ? `Minecraft ${version}` : "", software ? `${software} servers` : ""].filter(Boolean).join(" and ");
+  const lead = compactText(resource.shortDescription || resource.description);
+  const separator = lead && /[.!?]$/.test(lead) ? " " : ". ";
+  const suffix = `${resource.free ? "Free" : "Premium"} official IconRealms ${categoryPhrases[category.id] || category.name.toLowerCase()} resource${qualifiers ? ` for ${qualifiers}` : ""}${tags ? ` with ${tags}.` : "."}`;
+  return clipMeta(`${lead}${separator}${suffix}`, 165);
+}
+
+function meaningfulSeoValues(values = []) {
+  return (values || []).filter((item) => {
+    const value = String(item || "").trim();
+    return value && !/^any$/i.test(value);
+  });
+}
+
 function resourceUrl(resource, params = {}) {
-  const search = new URLSearchParams({ id: resource.slug || resource.id, ...params });
-  return route(`/resources/?${search.toString()}`);
+  const search = new URLSearchParams(params);
+  return route(`${resourcePath(resource)}${search.toString() ? `?${search.toString()}` : ""}`);
 }
 
 function categoryUrl(category) {
@@ -483,9 +584,24 @@ function renderMarketplace(state, kind = "") {
   const resources = sortResources(filterResources(publicResources(state), baseFilters), baseFilters.sort);
   const counts = marketplaceCounts(state);
   const heading = kind === "free" ? "Free Resources" : kind === "premium" ? "Premium Resources" : baseFilters.category ? `${categoryById(baseFilters.category).name} Resources` : "Resource Marketplace";
-  const marketplaceTitle = kind === "free" ? "Free Minecraft Resources | IconBuilds" : kind === "premium" ? "Premium Minecraft Resources | IconBuilds" : baseFilters.category ? `${categoryById(baseFilters.category).name} Resources | IconBuilds` : "Minecraft Resource Marketplace | IconBuilds";
-  const marketplaceUrl = kind ? `${CONFIG.site.url}/${kind}/` : baseFilters.category ? `${CONFIG.site.url}/resources/${encodeURIComponent(baseFilters.category)}/` : `${CONFIG.site.url}/resources/`;
-  setSeo(marketplaceTitle, CONFIG.seo.description, marketplaceUrl, CONFIG.seo.robotsIndex);
+  const selectedCategory = categoryById(baseFilters.category);
+  const categoryMeta = baseFilters.category ? categorySeo(selectedCategory) : null;
+  const marketplaceTitle = kind === "free"
+    ? "Free Minecraft Resources | Free Skripts, Plugins, Builds & Setups | IconBuilds"
+    : kind === "premium"
+      ? "Premium Minecraft Resources | Paid Skripts, Plugins, Builds & Setups | IconBuilds"
+      : categoryMeta
+        ? categoryMeta.title
+        : "Minecraft Resource Marketplace | Skripts, Plugins, Builds & Setups | IconBuilds";
+  const marketplaceDescription = kind === "free"
+    ? "Browse free official IconRealms Minecraft resources, including free Skripts, plugins, builds, configurations, textures, models, and Discord bot setups."
+    : kind === "premium"
+      ? "Browse premium official IconRealms Minecraft resources with secure checkout, protected downloads, purchase history, updates, and support."
+      : categoryMeta
+        ? categoryMeta.description
+        : "Search official IconRealms Minecraft resources including Skripts, plugins, builds, server setups, configurations, textures, models, and Discord bot setups.";
+  const marketplaceUrl = kind ? siteUrl(`${kind}/`) : baseFilters.category ? siteUrl(`resources/${encodeURIComponent(baseFilters.category)}/`) : siteUrl("resources/");
+  setSeo(marketplaceTitle, marketplaceDescription, marketplaceUrl, CONFIG.seo.robotsIndex);
   layout(state, `<section class="section">
     <div class="market-hero">
       <div>
@@ -544,7 +660,7 @@ function renderResourceDetail(state) {
   const tab = new URLSearchParams(location.search).get("tab") || "overview";
   const owned = ownsResource(state, resource.id);
   const images = [resource.coverImage, ...(resource.showcaseImages || [])].filter(Boolean);
-  setSeo(resource.seoTitle || `${resource.name} | IconBuilds`, resource.seoDescription || resource.shortDescription || CONFIG.seo.description, `${CONFIG.site.url}/resources/?id=${encodeURIComponent(resource.slug || resource.id)}`, CONFIG.seo.robotsIndex);
+  setSeo(resourceSeoTitle(resource), resourceSeoDescription(resource), resourceCanonical(resource), CONFIG.seo.robotsIndex);
   layout(state, `<section class="section">
     <nav class="muted"><a href="${route("/resources/")}">Resources</a> / ${escapeHtml(categoryById(resource.category).name)} / ${escapeHtml(resource.name)}</nav>
     <div class="resource-layout">

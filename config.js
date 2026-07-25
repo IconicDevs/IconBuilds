@@ -34,9 +34,9 @@ const IconBuildsConfig = {
     }
   },
   seo: {
-    title: "IconBuilds | Premium Minecraft Resources by IconRealms",
+    title: "IconBuilds | Minecraft Resources, Skripts, Plugins, Builds & Setups",
     description:
-      "Browse official IconRealms Minecraft plugins, builds, server setups, Skripts, configurations, textures and models, and Discord resources.",
+      "Browse official IconRealms Minecraft resources, including Skripts, plugins, server setups, builds, configurations, textures, models, and Discord bot setups.",
     keywords: [
       "minecraft resources",
       "minecraft plugins",
@@ -44,6 +44,10 @@ const IconBuildsConfig = {
       "minecraft server setups",
       "minecraft skripts",
       "minecraft configurations",
+      "minecraft textures",
+      "minecraft models",
+      "free minecraft resources",
+      "premium minecraft resources",
       "discord bot setups",
       "iconrealms",
       "iconbuilds"
@@ -53,9 +57,9 @@ const IconBuildsConfig = {
   },
   copy: {
     heroEyebrow: "Minecraft Resource Marketplace",
-    heroTitle: "Find the best resources for your Minecraft server",
+    heroTitle: "Minecraft resources for servers that need to stand out",
     heroBody:
-      "Browse official IconRealms plugins, builds, setups, textures and models, Skripts, and Discord resources.",
+      "Browse official IconRealms Minecraft builds, Skripts, plugins, server setups, configurations, textures, models, and Discord bot setups.",
     searchPlaceholder: "Search resources...",
     recommendedTitle: "Recommended for You",
     recommendedFallback: "Official drops will appear here after an administrator publishes the first resources.",
@@ -73,13 +77,62 @@ const IconBuildsConfig = {
     { key: "categories", enabled: true }
   ],
   categories: [
-    { id: "builds", name: "Builds", icon: "blocks", description: "Minecraft maps, hubs, spawns, arenas, and builds." },
-    { id: "skripts", name: "Skripts", icon: "code", description: "Skript systems and gameplay features." },
-    { id: "plugins", name: "Plugins", icon: "plug", description: "Custom Minecraft plugin resources and systems." },
-    { id: "server-setups", name: "Server Setups", icon: "server", description: "Complete server setups, layouts, and launch packs." },
-    { id: "configurations", name: "Configurations", icon: "settings", description: "Configs for plugins, ranks, menus, crates, and systems." },
-    { id: "textures-models", name: "Textures & Models", icon: "palette", description: "Texture packs, custom models, UI textures, icons, and visual resource assets." },
-    { id: "discord-bot-setups", name: "Discord Bot Setups", icon: "bot", description: "Discord bot files, commands, and server automation." }
+    {
+      id: "builds",
+      name: "Builds",
+      icon: "blocks",
+      description: "Minecraft maps, hubs, spawns, arenas, lobbies, and server build resources.",
+      seoTitle: "Minecraft Build Resources | Hubs, Spawns, Arenas & Maps | IconBuilds",
+      seoDescription: "Browse official IconRealms Minecraft build resources, including hubs, spawns, arenas, maps, lobbies, and server builds for Minecraft communities."
+    },
+    {
+      id: "skripts",
+      name: "Skripts",
+      icon: "code",
+      description: "Minecraft Skript systems, commands, gameplay mechanics, and server features.",
+      seoTitle: "Minecraft Skript Resources | Gameplay Systems & Server Features | IconBuilds",
+      seoDescription: "Find official IconRealms Minecraft Skript resources for gameplay systems, commands, server features, Lifesteal, economy, utilities, and custom mechanics."
+    },
+    {
+      id: "plugins",
+      name: "Plugins",
+      icon: "plug",
+      description: "Minecraft plugin resources, server systems, utilities, and custom features.",
+      seoTitle: "Minecraft Plugin Resources | Server Plugins & Systems | IconBuilds",
+      seoDescription: "Browse official IconRealms Minecraft plugin resources, server plugins, utilities, custom systems, gameplay features, and premium Minecraft plugin downloads."
+    },
+    {
+      id: "server-setups",
+      name: "Server Setups",
+      icon: "server",
+      description: "Complete Minecraft server setups, premade layouts, launch packs, and server bases.",
+      seoTitle: "Minecraft Server Setup Resources | Premade Server Setups | IconBuilds",
+      seoDescription: "Browse official IconRealms Minecraft server setup resources, including premade server setups, launch packs, layouts, configs, and server bases."
+    },
+    {
+      id: "configurations",
+      name: "Configurations",
+      icon: "settings",
+      description: "Minecraft plugin configs, menus, ranks, crates, shops, rewards, and server settings.",
+      seoTitle: "Minecraft Configuration Resources | Plugin Configs, Menus & Ranks | IconBuilds",
+      seoDescription: "Find official IconRealms Minecraft configuration resources for plugin configs, menus, ranks, crates, shops, rewards, GUIs, and server settings."
+    },
+    {
+      id: "textures-models",
+      name: "Textures & Models",
+      icon: "palette",
+      description: "Minecraft texture packs, custom models, UI textures, icons, cosmetics, and visual assets.",
+      seoTitle: "Minecraft Textures & Models | Texture Packs, Custom Models & Assets | IconBuilds",
+      seoDescription: "Browse official IconRealms Minecraft textures and models, including texture packs, custom models, UI textures, icons, cosmetics, and visual assets."
+    },
+    {
+      id: "discord-bot-setups",
+      name: "Discord Bot Setups",
+      icon: "bot",
+      description: "Discord bot setups, command packs, automation files, moderation tools, and community systems.",
+      seoTitle: "Discord Bot Setup Resources | Bot Files, Commands & Automation | IconBuilds",
+      seoDescription: "Browse official IconRealms Discord bot setup resources, including bot files, commands, moderation tools, automation systems, and community server utilities."
+    }
   ],
   filters: {
     minecraftVersions: [

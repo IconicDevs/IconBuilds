@@ -1,23 +1,10 @@
 const fs = require("fs");
 const path = require("path");
 const CONFIG = require("../config.js");
+const { __seo: seo } = require("../api/index.js");
 
 const root = path.join(__dirname, "..");
 const dbPath = path.join(root, "data", "iconbuilds-db.json");
-const outputPath = path.join(root, "sitemap.xml");
-
-function xmlEscape(value = "") {
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function isoDate(value) {
-  const date = value ? new Date(value) : new Date();
-  return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
-}
 
 function loadDb() {
   try {
@@ -27,39 +14,49 @@ function loadDb() {
   }
 }
 
-function siteUrl(pathname = "") {
-  return `${CONFIG.site.url.replace(/\/+$/, "")}/${pathname.replace(/^\/+/, "")}`;
+function writeText(relativePath, text) {
+  const target = path.join(root, relativePath);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, text);
+  return target;
 }
 
-function resourcePath(resource) {
-  return `resources/?id=${encodeURIComponent(resource.slug || resource.id)}`;
+function removeStaleResourcePages(db) {
+  const resourcesRoot = path.join(root, "resources");
+  const live = new Set(
+    (db.resources || [])
+      .filter((resource) => resource.status === "published")
+      .map((resource) => resource.slug || resource.id)
+      .filter(Boolean)
+  );
+  if (!fs.existsSync(resourcesRoot)) return;
+  for (const entry of fs.readdirSync(resourcesRoot, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const keep = CONFIG.categories.some((category) => category.id === entry.name) || live.has(entry.name);
+    if (!keep) fs.rmSync(path.join(resourcesRoot, entry.name), { recursive: true, force: true });
+  }
 }
 
-function urlEntry(loc, changefreq, priority, lastmod = new Date().toISOString()) {
-  return `  <url>\n    <loc>${xmlEscape(loc)}</loc>\n    <lastmod>${xmlEscape(isoDate(lastmod))}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
-}
-
-function buildSitemap() {
+function buildSeoFiles() {
   const db = loadDb();
-  const staticPages = [
-    ["", "daily", "1.0"],
-    ["resources/", "daily", "0.9"],
-    ["free/", "daily", "0.8"],
-    ["premium/", "daily", "0.8"],
-    ["support/", "monthly", "0.5"],
-    ["terms/", "yearly", "0.3"],
-    ["privacy/", "yearly", "0.3"],
-    ["refund/", "yearly", "0.3"],
-    ["guidelines/", "yearly", "0.3"]
-  ];
-  const categoryPages = (CONFIG.categories || []).map((category) => [`resources/${category.id}/`, "weekly", "0.7"]);
-  const resourcePages = (db.resources || [])
-    .filter((resource) => resource.status === "published")
-    .map((resource) => [resourcePath(resource), "weekly", "0.85", resource.updatedAt || resource.publishedAt || resource.createdAt]);
+  removeStaleResourcePages(db);
+  const written = [];
 
-  const urls = [...staticPages, ...categoryPages, ...resourcePages];
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([pathname, changefreq, priority, lastmod]) => urlEntry(siteUrl(pathname), changefreq, priority, lastmod)).join("\n")}\n</urlset>\n`;
+  written.push(writeText("sitemap.xml", seo.sitemapXml(db)));
+  written.push(writeText("resources/index.html", seo.listingPageHtml("resources", db)));
+  written.push(writeText("free/index.html", seo.listingPageHtml("free", db)));
+  written.push(writeText("premium/index.html", seo.listingPageHtml("premium", db)));
+
+  for (const category of CONFIG.categories || []) {
+    written.push(writeText(`resources/${category.id}/index.html`, seo.categoryPageHtml(category, db)));
+  }
+
+  for (const resource of (db.resources || []).filter((item) => item.status === "published")) {
+    written.push(writeText(seo.resourcePageFilePath(resource), seo.resourcePageHtml(resource)));
+  }
+
+  return written;
 }
 
-fs.writeFileSync(outputPath, buildSitemap());
-console.log(`Wrote ${path.relative(process.cwd(), outputPath)}`);
+const written = buildSeoFiles();
+console.log(`Wrote ${written.length} SEO files`);

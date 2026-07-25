@@ -259,6 +259,9 @@ function publicResource(resource, admin = false) {
   if (!resource) return null;
   const copy = { ...resource };
   copy.category = normalizeCategoryId(copy.category);
+  copy.seoTitle = resourceSeoTitle(copy);
+  copy.seoDescription = resourceSeoDescription(copy);
+  copy.canonicalUrl = resourceCanonical(copy);
   if (!admin) {
     delete copy.fileUrl;
     delete copy.internalNotes;
@@ -271,7 +274,13 @@ function normalizeDb(input) {
   for (const key of Object.keys(DB_DEFAULT)) {
     if (Array.isArray(DB_DEFAULT[key]) && !Array.isArray(db[key])) db[key] = [];
   }
-  db.resources = db.resources.map((resource) => ({ ...resource, category: normalizeCategoryId(resource.category) }));
+  db.resources = db.resources.map((resource) => {
+    const copy = { ...resource, category: normalizeCategoryId(resource.category) };
+    copy.seoTitle = resourceSeoTitle(copy);
+    copy.seoDescription = resourceSeoDescription(copy);
+    copy.canonicalUrl = resourceCanonical(copy);
+    return copy;
+  });
   db.version = Number(db.version || 1);
   return db;
 }
@@ -297,7 +306,8 @@ function githubConfig() {
     repo,
     branch: process.env.GITHUB_BRANCH || "main",
     dbPath: process.env.GITHUB_DB_PATH || "data/iconbuilds-db.json",
-    backupPath: process.env.GITHUB_DB_BACKUP_PATH || "data/iconbuilds-db.backup.json"
+    backupPath: process.env.GITHUB_DB_BACKUP_PATH || "data/iconbuilds-db.backup.json",
+    sitemapPath: process.env.GITHUB_SITEMAP_PATH || "sitemap.xml"
   };
 }
 
@@ -354,6 +364,18 @@ async function readGithubFile(filePath) {
   }
 }
 
+async function githubFileSha(filePath) {
+  const cfg = githubConfig();
+  const url = `https://api.github.com/repos/${cfg.repo}/contents/${encodeURIComponent(filePath).replace(/%2F/g, "/")}?ref=${encodeURIComponent(cfg.branch)}`;
+  try {
+    const json = await githubFetch(url);
+    return json.sha || "";
+  } catch (err) {
+    if (err.status === 404) return "";
+    throw err;
+  }
+}
+
 async function writeGithubFile(filePath, db, sha, message) {
   const cfg = githubConfig();
   const url = `https://api.github.com/repos/${cfg.repo}/contents/${encodeURIComponent(filePath).replace(/%2F/g, "/")}`;
@@ -367,6 +389,35 @@ async function writeGithubFile(filePath, db, sha, message) {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body)
+  });
+}
+
+async function writeGithubTextFile(filePath, text, message) {
+  const cfg = githubConfig();
+  const sha = await githubFileSha(filePath);
+  const url = `https://api.github.com/repos/${cfg.repo}/contents/${encodeURIComponent(filePath).replace(/%2F/g, "/")}`;
+  const body = {
+    message,
+    content: Buffer.from(String(text || "")).toString("base64"),
+    branch: cfg.branch
+  };
+  if (sha) body.sha = sha;
+  return githubFetch(url, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+}
+
+async function deleteGithubFile(filePath, message) {
+  const cfg = githubConfig();
+  const sha = await githubFileSha(filePath);
+  if (!sha) return null;
+  const url = `https://api.github.com/repos/${cfg.repo}/contents/${encodeURIComponent(filePath).replace(/%2F/g, "/")}`;
+  return githubFetch(url, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, sha, branch: cfg.branch })
   });
 }
 
@@ -401,7 +452,44 @@ async function writeStore(db, sha, message) {
   return "";
 }
 
-async function withDb(mutator, message = "IconBuilds data update") {
+async function writeStaticTextFile(filePath, text, message) {
+  if (githubConfig()) return writeGithubTextFile(filePath, text, message);
+  const target = path.resolve(process.cwd(), filePath);
+  await fs.mkdir(path.dirname(target), { recursive: true });
+  await fs.writeFile(target, String(text || ""));
+  return null;
+}
+
+async function deleteStaticTextFile(filePath, message) {
+  if (githubConfig()) return deleteGithubFile(filePath, message);
+  const target = path.resolve(process.cwd(), filePath);
+  const root = path.resolve(process.cwd());
+  if (!target.startsWith(root)) return null;
+  await fs.rm(target, { force: true }).catch(() => {});
+  return null;
+}
+
+async function syncStaticSeo(db, removeSlugs = []) {
+  if (!githubConfig() && process.env.NODE_ENV === "test") return;
+  const normalized = normalizeDb(db);
+  await writeStaticTextFile(githubConfig()?.sitemapPath || "sitemap.xml", sitemapXml(normalized), "Update IconBuilds sitemap");
+  await writeStaticTextFile("resources/index.html", listingPageHtml("resources", normalized), "Update resources SEO page");
+  await writeStaticTextFile("free/index.html", listingPageHtml("free", normalized), "Update free resources SEO page");
+  await writeStaticTextFile("premium/index.html", listingPageHtml("premium", normalized), "Update premium resources SEO page");
+  for (const category of CONFIG.categories) {
+    await writeStaticTextFile(`resources/${category.id}/index.html`, categoryPageHtml(category, normalized), `Update ${category.name} SEO page`);
+  }
+  const published = normalized.resources.filter((resource) => resource.status === "published");
+  for (const resource of published) {
+    await writeStaticTextFile(resourcePageFilePath(resource), resourcePageHtml(resource), `Update SEO page for ${resource.name}`);
+  }
+  const liveSlugs = new Set(published.map((resource) => resource.slug || resource.id));
+  for (const slug of [...new Set(removeSlugs.filter(Boolean))]) {
+    if (!liveSlugs.has(slug)) await deleteStaticTextFile(`resources/${slug}/index.html`, `Remove SEO page for ${slug}`);
+  }
+}
+
+async function withDb(mutator, message = "IconBuilds data update", options = {}) {
   let lastError;
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const { db, sha } = await readStore();
@@ -409,8 +497,16 @@ async function withDb(mutator, message = "IconBuilds data update") {
     const result = await mutator(db);
     if (JSON.stringify(db) === before && result) return { db: normalizeDb(db), result };
     try {
-      const nextSha = await writeStore(normalizeDb(db), sha, message);
-      return { db: normalizeDb(db), result, sha: nextSha };
+      const normalized = normalizeDb(db);
+      const nextSha = await writeStore(normalized, sha, message);
+      if (options.syncSeo) {
+        try {
+          await syncStaticSeo(normalized, options.removeSlugs || []);
+        } catch (err) {
+          console.error("[IconBuilds SEO sync]", err.message);
+        }
+      }
+      return { db: normalized, result, sha: nextSha };
     } catch (err) {
       lastError = err;
       if (![409, 422].includes(Number(err.status))) throw err;
@@ -492,6 +588,95 @@ function slugify(value) {
     .replace(/^-+|-+$/g, "")
     .slice(0, 90)
     .toLowerCase() || randomId("resource-");
+}
+
+function compactText(value = "") {
+  return String(value || "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, " $1 ")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, " $1 ")
+    .replace(/[`*_>#]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function clipMeta(value = "", limit = 160) {
+  const text = compactText(value);
+  if (text.length <= limit) return text;
+  const clipped = text.slice(0, limit - 1).replace(/\s+\S*$/, "").replace(/[,\s;:.-]+$/, "");
+  return `${clipped}.`;
+}
+
+function siteUrl(pathname = "") {
+  return `${CONFIG.site.url.replace(/\/+$/, "")}/${String(pathname || "").replace(/^\/+/, "")}`;
+}
+
+function resourcePublicId(resource = {}) {
+  return resource.slug || resource.id || slugify(resource.name || "resource");
+}
+
+function resourcePagePath(resource = {}) {
+  return `resources/${encodeURIComponent(resourcePublicId(resource))}/`;
+}
+
+function resourcePageFilePath(resource = {}) {
+  return `${resourcePagePath(resource)}index.html`;
+}
+
+function resourceCanonical(resource = {}) {
+  return siteUrl(resourcePagePath(resource));
+}
+
+function categorySeo(category = {}) {
+  const name = category.name || "Minecraft Resources";
+  return {
+    title: category.seoTitle || `${name} | Minecraft Resources | IconBuilds`,
+    description: category.seoDescription || `Browse official IconRealms ${name.toLowerCase()} for Minecraft servers and Discord communities on IconBuilds.`
+  };
+}
+
+function resourceSeoTitle(resource = {}) {
+  const category = categoryByIdServer(resource.category);
+  const categoryLabels = {
+    builds: "Minecraft Build",
+    skripts: "Minecraft Skript",
+    plugins: "Minecraft Plugin",
+    "server-setups": "Minecraft Server Setup",
+    configurations: "Minecraft Configuration",
+    "textures-models": "Minecraft Textures & Models",
+    "discord-bot-setups": "Discord Bot Setup"
+  };
+  const version = meaningfulSeoValues(resource.minecraftVersions).slice(0, 2).join(", ");
+  const tail = version ? ` for ${version}` : "";
+  return clipMeta(`${resource.name} - ${categoryLabels[category.id] || category.name}${tail} | IconBuilds`, 70);
+}
+
+function resourceSeoDescription(resource = {}) {
+  const category = categoryByIdServer(resource.category);
+  const categoryPhrases = {
+    builds: "Minecraft build",
+    skripts: "Minecraft Skript",
+    plugins: "Minecraft plugin",
+    "server-setups": "Minecraft server setup",
+    configurations: "Minecraft configuration",
+    "textures-models": "Minecraft textures and models",
+    "discord-bot-setups": "Discord bot setup"
+  };
+  const version = meaningfulSeoValues(resource.minecraftVersions).slice(0, 3).join(", ");
+  const software = meaningfulSeoValues(resource.serverSoftware).slice(0, 3).join(", ");
+  const tags = (resource.tags || []).filter(Boolean).slice(0, 4).join(", ");
+  const qualifiers = [version ? `Minecraft ${version}` : "", software ? `${software} servers` : ""].filter(Boolean).join(" and ");
+  const lead = compactText(resource.shortDescription || resource.description);
+  const separator = lead && /[.!?]$/.test(lead) ? " " : ". ";
+  const suffix = `${resource.free ? "Free" : "Premium"} official IconRealms ${categoryPhrases[category.id] || category.name.toLowerCase()} resource${qualifiers ? ` for ${qualifiers}` : ""}${tags ? ` with ${tags}.` : "."}`;
+  return clipMeta(`${lead}${separator}${suffix}`, 165);
+}
+
+function meaningfulSeoValues(values = []) {
+  return (values || []).filter((item) => {
+    const value = String(item || "").trim();
+    return value && !/^any$/i.test(value);
+  });
 }
 
 function normalizeEmail(value) {
@@ -676,6 +861,9 @@ function sanitizeResource(input, db) {
     throw err;
   }
   const showcaseImages = parseArray(resource.showcaseImages, CONFIG.resource.showcaseImageLimit).map((url) => safeUrl(url));
+  const minecraftVersions = parseArray(resource.minecraftVersions, 30);
+  const serverSoftware = parseArray(resource.serverSoftware, 30);
+  const compatibility = parseArray(resource.compatibility, 30);
   const next = {
     ...existing,
     id,
@@ -696,17 +884,17 @@ function sanitizeResource(input, db) {
     currentVersion: String(resource.currentVersion || existing.currentVersion || "1.0.0").slice(0, 60),
     dependencies: parseObjectArray(resource.dependencies, 30).map(sanitizeDependency),
     updates: parseObjectArray(resource.updates, 50).map(sanitizeUpdate),
-    minecraftVersions: parseArray(resource.minecraftVersions, 30),
-    serverSoftware: parseArray(resource.serverSoftware, 30),
-    compatibility: parseArray(resource.compatibility, 30),
+    minecraftVersions,
+    serverSoftware,
+    compatibility,
     installation: resource.installation === undefined ? (existing.installation || "") : moderateText(String(resource.installation || "").slice(0, 20000), "Installation"),
     supportInfo: resource.supportInfo === undefined ? (existing.supportInfo || "") : moderateText(String(resource.supportInfo || "").slice(0, 12000), "Support info"),
     notices: resource.notices === undefined ? (existing.notices || "") : moderateText(String(resource.notices || "").slice(0, 12000), "Notices"),
     featured: Boolean(resource.featured),
     status,
-    seoTitle: `${name} | IconBuilds`.slice(0, 70),
-    seoDescription: (shortDescription || description.replace(/[#*_`>[\]()!-]/g, " ").replace(/\s+/g, " ").trim()).slice(0, 170),
-    canonicalUrl: `${CONFIG.site.url}/resources/?id=${encodeURIComponent(slug)}`,
+    seoTitle: "",
+    seoDescription: "",
+    canonicalUrl: "",
     imageAlt: `${name} resource preview`.slice(0, 180),
     updatedAt: now(),
     createdAt: existing.createdAt || now(),
@@ -716,6 +904,9 @@ function sanitizeResource(input, db) {
     downloadCount: Number(existing.downloadCount || 0),
     purchaseCount: Number(existing.purchaseCount || 0)
   };
+  next.seoTitle = resourceSeoTitle(next);
+  next.seoDescription = resourceSeoDescription(next);
+  next.canonicalUrl = resourceCanonical(next);
   return next;
 }
 
@@ -1084,24 +1275,32 @@ async function handleGoogleCallback(req, res, url) {
 }
 
 async function handleAdmin(req, res, body) {
+  const seoSync = { syncSeo: false, removeSlugs: [] };
   const result = await withDb(async (db) => {
     const user = requireAdmin(await currentUser(req, db));
     if (body.command === "saveResource") {
       const resource = sanitizeResource(body.resource || {}, db);
       const index = db.resources.findIndex((item) => item.id === resource.id);
+      if (index >= 0 && db.resources[index].slug && db.resources[index].slug !== resource.slug) seoSync.removeSlugs.push(db.resources[index].slug);
       if (index >= 0) db.resources[index] = resource;
       else db.resources.push(resource);
+      seoSync.syncSeo = true;
       db.auditLogs.push({ id: randomId("audit_"), type: "save-resource", userId: user.id, resourceId: resource.id, createdAt: now() });
     } else if (body.command === "togglePublishResource") {
       const resource = db.resources.find((item) => item.id === body.id);
       if (!resource) throw Object.assign(new Error("Resource not found."), { status: 404 });
+      const wasPublished = resource.status === "published";
       resource.status = resource.status === "published" ? "draft" : "published";
       resource.updatedAt = now();
       if (resource.status === "published" && !resource.publishedAt) resource.publishedAt = now();
+      seoSync.syncSeo = true;
+      if (wasPublished && resource.status !== "published") seoSync.removeSlugs.push(resource.slug || resource.id);
       db.auditLogs.push({ id: randomId("audit_"), type: "toggle-resource", userId: user.id, resourceId: resource.id, createdAt: now() });
     } else if (body.command === "deleteResource") {
       const resource = db.resources.find((item) => item.id === body.id);
       if (!resource) throw Object.assign(new Error("Resource not found."), { status: 404 });
+      seoSync.syncSeo = true;
+      seoSync.removeSlugs.push(resource.slug || resource.id);
       db.resources = db.resources.filter((item) => item.id !== resource.id);
       db.reviews = db.reviews.filter((item) => item.resourceId !== resource.id);
       db.purchases = db.purchases.filter((item) => item.resourceId !== resource.id);
@@ -1120,7 +1319,7 @@ async function handleAdmin(req, res, body) {
     }
     recomputeResourceStats(db);
     return stateFor(db, user);
-  }, `IconBuilds admin ${body.command || "action"}`);
+  }, `IconBuilds admin ${body.command || "action"}`, seoSync);
   send(res, 200, result.result);
 }
 
@@ -1378,10 +1577,16 @@ function sitemapXml(db) {
     ["refund/", "monthly", "0.3"],
     ["guidelines/", "monthly", "0.3"],
     ["support/", "monthly", "0.4"],
-    ...CONFIG.categories.map((cat) => [`resources/${cat.id}/`, "weekly", "0.7"]),
-    ...db.resources.filter((item) => item.status === "published").map((item) => [`resources/?id=${encodeURIComponent(item.slug || item.id)}`, "weekly", "0.8", item.updatedAt])
+    ...CONFIG.categories.map((cat) => [`resources/${cat.id}/`, "weekly", "0.75"]),
+    ...db.resources.filter((item) => item.status === "published").map((item) => [resourcePagePath(item), "weekly", "0.86", item.updatedAt || item.publishedAt || item.createdAt])
   ];
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([loc, changefreq, priority, lastmod]) => `  <url>\n    <loc>${xmlEscape(`${CONFIG.site.url}/${loc}`)}</loc>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>${lastmod ? `\n    <lastmod>${xmlEscape(new Date(lastmod).toISOString())}</lastmod>` : ""}\n  </url>`).join("\n")}\n</urlset>\n`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([loc, changefreq, priority, lastmod]) => `  <url>\n    <loc>${xmlEscape(`${CONFIG.site.url}/${loc}`)}</loc>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>${sitemapLastMod(lastmod)}\n  </url>`).join("\n")}\n</urlset>\n`;
+}
+
+function sitemapLastMod(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "" : `\n    <lastmod>${xmlEscape(date.toISOString())}</lastmod>`;
 }
 
 async function handleSitemap(req, res) {
@@ -1397,44 +1602,152 @@ function htmlEscape(value) {
   return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-function categoryPageHtml(category) {
-  const title = `${category.name} Minecraft Resources | IconBuilds`;
-  const description = `Browse official IconRealms ${category.name.toLowerCase()} for Minecraft and Discord communities on IconBuilds.`;
-  return pageShell("resources", title, description, `${CONFIG.site.url}/resources/${category.id}/`, `
+function listingSeo(page = "resources") {
+  const meta = {
+    resources: {
+      title: "Minecraft Resource Marketplace | Skripts, Plugins, Builds & Setups | IconBuilds",
+      description: "Search official IconRealms Minecraft resources including Skripts, plugins, builds, server setups, configurations, textures, models, and Discord bot setups.",
+      canonical: siteUrl("resources/"),
+      heading: "Minecraft Resource Marketplace",
+      copy: "Browse free and premium official IconRealms resources for Minecraft servers and Discord communities. Listings can include protected downloads, versions, changelogs, dependencies, reviews, and compatibility details."
+    },
+    free: {
+      title: "Free Minecraft Resources | Free Skripts, Plugins, Builds & Setups | IconBuilds",
+      description: "Browse free official IconRealms Minecraft resources, including free Skripts, plugins, builds, configurations, server assets, textures, models, and Discord resources.",
+      canonical: siteUrl("free/"),
+      heading: "Free Minecraft Resources",
+      copy: "Find free IconRealms resources for Minecraft servers. Free downloads still use account-gated library access so files, updates, and resource history stay protected."
+    },
+    premium: {
+      title: "Premium Minecraft Resources | Paid Skripts, Plugins, Builds & Setups | IconBuilds",
+      description: "Browse premium official IconRealms Minecraft resources with secure checkout, protected downloads, purchase history, updates, and support.",
+      canonical: siteUrl("premium/"),
+      heading: "Premium Minecraft Resources",
+      copy: "Discover paid IconRealms resources for Minecraft communities, including premium Skripts, plugins, server setups, builds, configurations, textures, models, and Discord bot setups."
+    }
+  };
+  return meta[page] || meta.resources;
+}
+
+function listingPageHtml(page = "resources", db = DB_DEFAULT) {
+  const normalized = normalizeDb(db);
+  const seo = listingSeo(page);
+  const published = normalized.resources
+    .filter((resource) => resource.status === "published")
+    .filter((resource) => page === "free" ? resource.free || Number(resource.priceCents || 0) <= 0 : page === "premium" ? !resource.free && Number(resource.priceCents || 0) > 0 : true)
+    .slice(0, 24);
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: seo.heading,
+    description: seo.description,
+    url: seo.canonical,
+    isPartOf: { "@type": "WebSite", name: CONFIG.site.name, url: CONFIG.site.url },
+    publisher: { "@type": "Organization", name: CONFIG.site.owner, url: CONFIG.site.url }
+  };
+  return pageShell(page, seo.title, seo.description, seo.canonical, `
+    <script type="application/ld+json">${JSON.stringify(websiteSchema).replace(/</g, "\\u003c")}</script>
+    <section class="section">
+      <p class="eyebrow">IconBuilds Marketplace</p>
+      <h1 class="section-title">${htmlEscape(seo.heading)}</h1>
+      <p class="section-copy">${htmlEscape(seo.copy)}</p>
+      <div class="panel">
+        <h2>Browse Minecraft resource categories</h2>
+        <p>IconBuilds categories are focused on search-friendly resource types: Minecraft builds, Skripts, plugins, server setups, configurations, textures, models, and Discord bot setups.</p>
+        <ul>
+          ${CONFIG.categories.map((category) => `<li><a href="/resources/${htmlEscape(category.id)}/">${htmlEscape(category.name)}</a> - ${htmlEscape(category.description)}</li>`).join("")}
+        </ul>
+      </div>
+      ${published.length ? `<div class="panel"><h2>Published resources</h2><ul>${published.map((resource) => `<li><a href="/${htmlEscape(resourcePagePath(resource))}">${htmlEscape(resource.name)}</a> - ${htmlEscape(resourceSeoDescription(resource))}</li>`).join("")}</ul></div>` : `<div class="panel"><h2>Published resources</h2><p>Published IconRealms resources will appear here after administrators release them.</p></div>`}
+    </section>`);
+}
+
+function categoryPageHtml(category, db = DB_DEFAULT) {
+  const normalized = normalizeDb(db);
+  const seo = categorySeo(category);
+  const canonical = siteUrl(`resources/${category.id}/`);
+  const resources = normalized.resources
+    .filter((resource) => resource.status === "published" && normalizeCategoryId(resource.category) === category.id)
+    .slice(0, 24);
+  const schema = breadcrumbSchema([
+    ["Resources", siteUrl("resources/")],
+    [category.name, canonical]
+  ]);
+  return pageShell("resources", seo.title, seo.description, canonical, `
+    <script type="application/ld+json">${JSON.stringify(schema).replace(/</g, "\\u003c")}</script>
     <section class="section">
       <nav class="muted"><a href="/resources/">Resources</a> / ${htmlEscape(category.name)}</nav>
       <h1 class="section-title">${htmlEscape(category.name)} Resources</h1>
       <p class="section-copy">${htmlEscape(category.description)}</p>
       <div id="category-seo-copy" class="panel">
-        <p>IconBuilds publishes official IconRealms resources only. This category page is reserved for admin-published ${htmlEscape(category.name.toLowerCase())} resources.</p>
+        <h2>${htmlEscape(seo.title.replace(" | IconBuilds", ""))}</h2>
+        <p>${htmlEscape(seo.description)}</p>
+        <p>IconBuilds publishes official IconRealms resources only, including free and premium downloads when available. Listings in this category are managed by IconRealms administrators and may include version support, dependencies, changelogs, reviews, compatibility tags, and protected download access.</p>
       </div>
+      ${resources.length ? `<div class="panel"><h2>Published ${htmlEscape(category.name.toLowerCase())}</h2><ul>${resources.map((resource) => `<li><a href="/${htmlEscape(resourcePagePath(resource))}">${htmlEscape(resource.name)}</a> - ${htmlEscape(resourceSeoDescription(resource))}</li>`).join("")}</ul></div>` : `<div class="panel"><h2>Published ${htmlEscape(category.name.toLowerCase())}</h2><p>No ${htmlEscape(category.name.toLowerCase())} are published yet. This page will update when IconRealms releases resources in this category.</p></div>`}
     </section>`);
 }
 
 function resourcePageHtml(resource) {
-  const title = resource.seoTitle || `${resource.name} | IconBuilds Resource`;
-  const description = (resource.seoDescription || resource.shortDescription || stripHtml(resource.description) || CONFIG.seo.description).slice(0, 160);
-  const canonical = `${CONFIG.site.url}/resources/?id=${encodeURIComponent(resource.slug || resource.id)}`;
-  const schema = structuredData(resource);
+  const title = resourceSeoTitle(resource);
+  const description = resourceSeoDescription(resource);
+  const canonical = resourceCanonical(resource);
+  const category = categoryByIdServer(resource.category);
+  const schema = [structuredData(resource), breadcrumbSchema([
+    ["Resources", siteUrl("resources/")],
+    [category.name, siteUrl(`resources/${category.id}/`)],
+    [resource.name, canonical]
+  ])];
   const images = [resource.coverImage, ...(resource.showcaseImages || [])].filter(Boolean);
+  const dependencies = resource.dependencies || [];
+  const updates = [...(resource.updates || [])].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+  const tags = [...new Set([...(resource.tags || []), ...(resource.minecraftVersions || []), ...(resource.serverSoftware || []), ...(resource.compatibility || [])].filter(Boolean))];
   return pageShell("resource", title, description, canonical, `
     <script type="application/ld+json">${JSON.stringify(schema).replace(/</g, "\\u003c")}</script>
     <section class="section">
-      <nav class="muted"><a href="/resources/">Resources</a> / ${htmlEscape(categoryByIdServer(resource.category).name)} / ${htmlEscape(resource.name)}</nav>
+      <nav class="muted"><a href="/resources/">Resources</a> / <a href="/resources/${htmlEscape(category.id)}/">${htmlEscape(category.name)}</a> / ${htmlEscape(resource.name)}</nav>
       <div class="resource-layout">
         <article>
-          <p class="eyebrow">${htmlEscape(categoryByIdServer(resource.category).name)}</p>
+          <p class="eyebrow">${htmlEscape(category.name)}</p>
           <h1 class="resource-title">${htmlEscape(resource.name)}</h1>
           <p class="section-copy">${htmlEscape(resource.shortDescription || "")}</p>
           ${images[0] ? `<div class="gallery-main"><img src="${htmlEscape(images[0])}" alt="${htmlEscape(resource.imageAlt || resource.name)}"></div>` : ""}
+          <div class="panel">
+            <h2>${htmlEscape(resource.name)} resource overview</h2>
+            <p>${htmlEscape(description)}</p>
+            ${tags.length ? `<p>${tags.map((tag) => `<span class="badge">${htmlEscape(tag)}</span>`).join(" ")}</p>` : ""}
+          </div>
           <div class="panel rich-text">${htmlEscape(stripHtml(resource.description || "")).replace(/\n/g, "<br>")}</div>
+          <div class="panel">
+            <h2>Compatibility and version details</h2>
+            <dl>
+              <dt>Resource version</dt><dd>${htmlEscape(resource.currentVersion || "1.0.0")}</dd>
+              <dt>Minecraft versions</dt><dd>${htmlEscape((resource.minecraftVersions || []).join(", ") || "Not specified")}</dd>
+              <dt>Server software</dt><dd>${htmlEscape((resource.serverSoftware || []).join(", ") || "Not specified")}</dd>
+              <dt>Compatibility</dt><dd>${htmlEscape((resource.compatibility || []).join(", ") || "Not specified")}</dd>
+            </dl>
+          </div>
+          <div class="panel">
+            <h2>Dependencies</h2>
+            ${dependencies.length ? `<ul>${dependencies.map((dep) => `<li>${htmlEscape(dep.name)}${dep.required ? " - required" : " - optional"}${dep.version ? ` (${htmlEscape(dep.version)})` : ""}</li>`).join("")}</ul>` : "<p>This resource has no required dependencies.</p>"}
+          </div>
+          <div class="panel">
+            <h2>Updates</h2>
+            ${updates.length ? `<ul>${updates.slice(0, 8).map((update) => `<li>v${htmlEscape(update.version || resource.currentVersion || "1.0.0")} - ${htmlEscape(update.title || "Update")} ${update.date ? `(${htmlEscape(update.date)})` : ""}</li>`).join("")}</ul>` : `<p>The first published version is ${htmlEscape(resource.currentVersion || "1.0.0")}.</p>`}
+          </div>
         </article>
         <aside class="purchase-box"><div class="panel"><div class="price-line"><span>${resource.free ? "Free download" : "License"}</span><strong>${htmlEscape(resource.free ? "Free" : `$${(Number(resource.priceCents || 0) / 100).toFixed(2)}`)}</strong></div><p class="muted">Published by ${htmlEscape(resource.ownershipLabel || "IconRealms")}.</p></div></aside>
       </div>
-    </section>`);
+    </section>`, {
+      image: images[0] || `${CONFIG.site.url}/logo.png`,
+      imageAlt: resource.imageAlt || `${resource.name} preview`,
+      keywords: [resource.name, category.name, ...(resource.tags || []), ...meaningfulSeoValues(resource.minecraftVersions), ...meaningfulSeoValues(resource.serverSoftware), ...(CONFIG.seo.keywords || [])].filter(Boolean).join(", ")
+    });
 }
 
-function pageShell(page, title, description, canonical, body) {
+function pageShell(page, title, description, canonical, body, options = {}) {
+  const image = options.image || `${CONFIG.site.url}/logo.png`;
+  const keywords = options.keywords || (CONFIG.seo.keywords || []).join(", ");
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -1444,12 +1757,20 @@ function pageShell(page, title, description, canonical, body) {
   <meta name="theme-color" content="#f97316">
   <title>${htmlEscape(title)}</title>
   <meta name="description" content="${htmlEscape(description)}">
+  <meta name="keywords" content="${htmlEscape(keywords)}">
   <meta name="robots" content="${CONFIG.seo.robotsIndex}">
   <link rel="canonical" href="${htmlEscape(canonical)}">
+  <meta property="og:site_name" content="${htmlEscape(CONFIG.site.name)}">
   <meta property="og:title" content="${htmlEscape(title)}">
   <meta property="og:description" content="${htmlEscape(description)}">
-  <meta property="og:type" content="website">
+  <meta property="og:type" content="${page === "resource" ? "product" : "website"}">
   <meta property="og:url" content="${htmlEscape(canonical)}">
+  <meta property="og:image" content="${htmlEscape(image)}">
+  <meta property="og:image:alt" content="${htmlEscape(options.imageAlt || title)}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${htmlEscape(title)}">
+  <meta name="twitter:description" content="${htmlEscape(description)}">
+  <meta name="twitter:image" content="${htmlEscape(image)}">
   <link rel="stylesheet" href="/assets/css/styles.css?v=summer-orange-20260723">
   <script src="/config.js?v=summer-orange-20260723" defer></script>
   <script src="/assets/js/app.js?v=summer-orange-20260723" defer></script>
@@ -1459,28 +1780,48 @@ function pageShell(page, title, description, canonical, body) {
 }
 
 function categoryByIdServer(id) {
-  return CONFIG.categories.find((item) => item.id === id) || { id, name: id || "Resources", description: "" };
+  const normalized = normalizeCategoryId(id);
+  return CONFIG.categories.find((item) => item.id === normalized) || { id: normalized, name: normalized || "Resources", description: "" };
+}
+
+function breadcrumbSchema(items = []) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map(([name, item], index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name,
+      item
+    }))
+  };
 }
 
 function structuredData(resource) {
+  const category = categoryByIdServer(resource.category);
+  const url = resourceCanonical(resource);
   const data = {
     "@context": "https://schema.org",
     "@type": resource.category === "plugins" || resource.category === "skripts" ? "SoftwareApplication" : "Product",
     name: resource.name,
-    description: resource.shortDescription || stripHtml(resource.description),
+    description: resourceSeoDescription(resource),
     image: [resource.coverImage, ...(resource.showcaseImages || [])].filter(Boolean),
     brand: { "@type": "Brand", name: CONFIG.site.owner },
     publisher: { "@type": "Organization", name: CONFIG.site.owner, url: CONFIG.site.url },
-    category: categoryByIdServer(resource.category).name,
+    category: category.name,
+    url,
     offers: {
       "@type": "Offer",
       price: resource.free ? "0" : String((Number(resource.priceCents || 0) / 100).toFixed(2)),
       priceCurrency: (CONFIG.resource.currency || "USD").toUpperCase(),
       availability: "https://schema.org/InStock",
-      url: `${CONFIG.site.url}/resources/?id=${encodeURIComponent(resource.slug || resource.id)}`
+      url
     },
     softwareVersion: resource.currentVersion || "1.0.0",
-    dateModified: resource.updatedAt || resource.createdAt
+    dateModified: resource.updatedAt || resource.createdAt,
+    applicationCategory: category.name,
+    operatingSystem: "Minecraft Server",
+    keywords: [category.name, ...(resource.tags || []), ...meaningfulSeoValues(resource.minecraftVersions), ...meaningfulSeoValues(resource.serverSoftware)].filter(Boolean).join(", ")
   };
   if (resource.reviewCount > 0) {
     data.aggregateRating = {
@@ -1496,9 +1837,9 @@ async function handleResourcePage(req, res, url) {
   const parts = url.pathname.split("/").filter(Boolean);
   const slug = parts[0] === "resources" ? parts[1] : (url.searchParams.get("id") || url.searchParams.get("slug"));
   const category = CONFIG.categories.find((item) => item.id === normalizeCategoryId(slug));
-  if (category) return sendText(res, 200, categoryPageHtml(category), "text/html; charset=utf-8", { "Cache-Control": "public, max-age=120" });
   const { db } = await readStore();
   recomputeResourceStats(db);
+  if (category) return sendText(res, 200, categoryPageHtml(category, db), "text/html; charset=utf-8", { "Cache-Control": "public, max-age=120" });
   const resource = db.resources.find((item) => item.status === "published" && (item.slug === slug || item.id === slug));
   if (!resource) return sendText(res, 404, pageShell("not-found", "Resource Not Found | IconBuilds", "That IconBuilds resource could not be found.", `${CONFIG.site.url}/resources/`, `<div class="notice">That resource could not be found.</div>`), "text/html; charset=utf-8");
   sendText(res, 200, resourcePageHtml(resource), "text/html; charset=utf-8", { "Cache-Control": "public, max-age=120" });
@@ -1554,6 +1895,15 @@ async function handler(req, res) {
 }
 
 module.exports = handler;
+module.exports.__seo = {
+  categoryPageHtml,
+  listingPageHtml,
+  resourceCanonical,
+  resourcePageFilePath,
+  resourcePageHtml,
+  resourcePagePath,
+  sitemapXml
+};
 module.exports.config = {
   api: {
     bodyParser: false
