@@ -109,8 +109,8 @@
       "notices": "",
       "featured": false,
       "status": "published",
-      "seoTitle": "DupeCore - Minecraft Skript for 1.21.1 | IconBuilds",
-      "seoDescription": "A all in one dupe skript! Item blacklisting, and lifesteal! Free official IconRealms Minecraft Skript resource for Minecraft 1.21.1 and Paper servers with skript.",
+      "seoTitle": "DupeCore - Free Minecraft Skript for 1.21.1 | IconBuilds",
+      "seoDescription": "Free Minecraft Skript for Paper servers running Minecraft 1.21.1. A all in one dupe skript! Item blacklisting, and lifesteal! Includes skript, lifesteal.",
       "canonicalUrl": "https://minestore.org/resources/dupecore/",
       "imageAlt": "DupeCore resource preview",
       "updatedAt": "2026-07-24T07:19:08.317Z",
@@ -174,8 +174,8 @@
       "notices": "",
       "featured": false,
       "status": "published",
-      "seoTitle": "HeadHunt - Minecraft Skript | IconBuilds",
-      "seoDescription": "A all in one HeadHunt skript! Very customizeable! Free official IconRealms Minecraft Skript resource with Skript, headhunt, utilities.",
+      "seoTitle": "HeadHunt - Free Minecraft Skript | IconBuilds",
+      "seoDescription": "Free Minecraft Skript. A all in one HeadHunt skript! Very customizeable! Includes Skript, headhunt, utilities.",
       "canonicalUrl": "https://minestore.org/resources/headhunt/",
       "imageAlt": "HeadHunt resource preview",
       "updatedAt": "2026-07-24T21:54:18.506Z",
@@ -238,8 +238,8 @@
       "notices": "",
       "featured": false,
       "status": "published",
-      "seoTitle": "Report Skript - Minecraft Skript | IconBuilds",
-      "seoDescription": "Report Skript, Lets players use /report to instantly alert staff in-game and on Discord. Free official IconRealms Minecraft Skript resource with skript, report.",
+      "seoTitle": "Report Skript - Free Minecraft Skript | IconBuilds",
+      "seoDescription": "Free Minecraft Skript. Report Skript, Lets players use /report to instantly alert staff in-game and on Discord. Includes skript, report, protection.",
       "canonicalUrl": "https://minestore.org/resources/report-skript/",
       "imageAlt": "Report Skript resource preview",
       "updatedAt": "2026-07-24T07:58:41.236Z",
@@ -248,6 +248,55 @@
       "averageRating": 0,
       "reviewCount": 0,
       "downloadCount": 1,
+      "purchaseCount": 0
+    },
+    {
+      "id": "res_03601fb9-b1a9-445a-a3db-29d485cdd43b",
+      "name": "Stream Skript",
+      "slug": "stream-skript",
+      "shortDescription": "Announce your stream to all the players!",
+      "description": "",
+      "category": "skripts",
+      "tags": [
+        "skript",
+        "stream",
+        "broadcast"
+      ],
+      "free": true,
+      "priceCents": 0,
+      "currency": "usd",
+      "ownershipLabel": "IconRealms Development",
+      "coverImage": "",
+      "showcaseImages": [],
+      "youtubeUrl": "",
+      "fileUrl": "",
+      "currentVersion": "1.0.0",
+      "dependencies": [],
+      "updates": [],
+      "minecraftVersions": [
+        "1.21.1"
+      ],
+      "serverSoftware": [
+        "Paper"
+      ],
+      "compatibility": [
+        "Java"
+      ],
+      "installation": "",
+      "supportInfo": "",
+      "notices": "",
+      "featured": false,
+      "status": "draft",
+      "seoTitle": "Stream Skript - Free Minecraft Skript for 1.21.1 | IconBuilds",
+      "seoDescription": "Free Minecraft Skript for Paper servers running Minecraft 1.21.1. Announce your stream to all the players! Includes skript, stream, broadcast.",
+      "canonicalUrl": "https://minestore.org/resources/stream-skript/",
+      "imageAlt": "Stream Skript resource preview",
+      "updatedAt": "2026-07-30T20:50:07.191Z",
+      "createdAt": "2026-07-30T20:50:07.191Z",
+      "publishedAt": "",
+      "averageRating": 0,
+      "reviewCount": 0,
+      "downloadCount": 0,
       "purchaseCount": 0
     }
   ],
@@ -506,6 +555,13 @@
       "type": "register",
       "userId": "usr_56788ae0-0e93-414a-b3f7-d9fd0d89bf69",
       "createdAt": "2026-07-26T10:53:49.206Z"
+    },
+    {
+      "id": "audit_14533735-d75a-4c3a-84dd-b771fe902aa4",
+      "type": "save-resource",
+      "userId": "usr_07b82c34-7b7a-4d98-9172-867aea29b31d",
+      "resourceId": "res_03601fb9-b1a9-445a-a3db-29d485cdd43b",
+      "createdAt": "2026-07-30T20:50:07.191Z"
     }
   ],
   "verificationChallenges": [
