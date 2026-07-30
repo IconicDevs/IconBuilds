@@ -648,7 +648,8 @@ function resourceSeoTitle(resource = {}) {
   };
   const version = meaningfulSeoValues(resource.minecraftVersions).slice(0, 2).join(", ");
   const tail = version ? ` for ${version}` : "";
-  return clipMeta(`${resource.name} - ${categoryLabels[category.id] || category.name}${tail} | IconBuilds`, 70);
+  const price = resource.free ? "Free" : "Premium";
+  return clipMeta(`${resource.name} - ${price} ${categoryLabels[category.id] || category.name}${tail} | IconBuilds`, 70);
 }
 
 function resourceSeoDescription(resource = {}) {
@@ -665,11 +666,12 @@ function resourceSeoDescription(resource = {}) {
   const version = meaningfulSeoValues(resource.minecraftVersions).slice(0, 3).join(", ");
   const software = meaningfulSeoValues(resource.serverSoftware).slice(0, 3).join(", ");
   const tags = (resource.tags || []).filter(Boolean).slice(0, 4).join(", ");
-  const qualifiers = [version ? `Minecraft ${version}` : "", software ? `${software} servers` : ""].filter(Boolean).join(" and ");
+  const target = software && version ? `${software} servers running Minecraft ${version}` : software ? `${software} servers` : version ? `Minecraft ${version}` : "";
   const lead = compactText(resource.shortDescription || resource.description);
-  const separator = lead && /[.!?]$/.test(lead) ? " " : ". ";
-  const suffix = `${resource.free ? "Free" : "Premium"} official IconRealms ${categoryPhrases[category.id] || category.name.toLowerCase()} resource${qualifiers ? ` for ${qualifiers}` : ""}${tags ? ` with ${tags}.` : "."}`;
-  return clipMeta(`${lead}${separator}${suffix}`, 165);
+  const leadSentence = lead ? `${lead}${/[.!?]$/.test(lead) ? "" : "."}` : "";
+  const prefix = `${resource.free ? "Free" : "Premium"} ${categoryPhrases[category.id] || category.name.toLowerCase()}${target ? ` for ${target}` : ""}`;
+  const tagCopy = tags ? ` Includes ${tags}.` : "";
+  return clipMeta(`${prefix}. ${leadSentence}${tagCopy}`, 158);
 }
 
 function meaningfulSeoValues(values = []) {
@@ -1605,28 +1607,56 @@ function htmlEscape(value) {
 function listingSeo(page = "resources") {
   const meta = {
     resources: {
-      title: "Minecraft Resource Marketplace | Skripts, Plugins, Builds & Setups | IconBuilds",
-      description: "Search official IconRealms Minecraft resources including Skripts, plugins, builds, server setups, configurations, textures, models, and Discord bot setups.",
+      title: "Minecraft Resources - Skripts, Plugins, Builds & Server Setups | IconBuilds",
+      description: "Search Minecraft resources including free Skripts, plugins, builds, server setups, configurations, texture packs, custom models, and Discord bot setups.",
       canonical: siteUrl("resources/"),
       heading: "Minecraft Resource Marketplace",
-      copy: "Browse free and premium official IconRealms resources for Minecraft servers and Discord communities. Listings can include protected downloads, versions, changelogs, dependencies, reviews, and compatibility details."
+      copy: "Browse free and premium Minecraft resources for server owners, including Skripts, plugins, builds, setups, configurations, textures, custom models, and Discord bot setups."
     },
     free: {
-      title: "Free Minecraft Resources | Free Skripts, Plugins, Builds & Setups | IconBuilds",
-      description: "Browse free official IconRealms Minecraft resources, including free Skripts, plugins, builds, configurations, server assets, textures, models, and Discord resources.",
+      title: "Free Minecraft Resources - Skripts, Plugins, Builds & Setups | IconBuilds",
+      description: "Download free Minecraft resources including free Skripts, plugins, builds, configurations, server assets, textures, models, and Discord resources.",
       canonical: siteUrl("free/"),
       heading: "Free Minecraft Resources",
-      copy: "Find free IconRealms resources for Minecraft servers. Free downloads still use account-gated library access so files, updates, and resource history stay protected."
+      copy: "Find free Minecraft Skripts, plugins, builds, configurations, and server assets. Free downloads still use account-gated library access so files and updates stay protected."
     },
     premium: {
-      title: "Premium Minecraft Resources | Paid Skripts, Plugins, Builds & Setups | IconBuilds",
-      description: "Browse premium official IconRealms Minecraft resources with secure checkout, protected downloads, purchase history, updates, and support.",
+      title: "Premium Minecraft Resources - Paid Skripts, Plugins & Setups | IconBuilds",
+      description: "Download premium Minecraft resources including paid Skripts, plugins, server setups, builds, configurations, textures, models, and Discord bot setups.",
       canonical: siteUrl("premium/"),
       heading: "Premium Minecraft Resources",
-      copy: "Discover paid IconRealms resources for Minecraft communities, including premium Skripts, plugins, server setups, builds, configurations, textures, models, and Discord bot setups."
+      copy: "Discover premium Minecraft resources for servers and communities, including paid Skripts, plugins, server setups, builds, configurations, texture packs, custom models, and Discord bot setups."
     }
   };
   return meta[page] || meta.resources;
+}
+
+function globalSearchPhrases() {
+  return [
+    ["Minecraft Skript resources", "/resources/skripts/"],
+    ["Free Minecraft Skripts", "/free/"],
+    ["Minecraft plugin resources", "/resources/plugins/"],
+    ["Free Minecraft plugins", "/free/"],
+    ["Minecraft builds and maps", "/resources/builds/"],
+    ["Free Minecraft builds", "/free/"],
+    ["Premade Minecraft server setups", "/resources/server-setups/"],
+    ["Minecraft plugin configurations", "/resources/configurations/"],
+    ["Minecraft texture packs and custom models", "/resources/textures-models/"],
+    ["Discord bot setups for Minecraft servers", "/resources/discord-bot-setups/"]
+  ];
+}
+
+function categorySearchPhrases(category = {}) {
+  const phrases = {
+    builds: ["Minecraft hubs and spawns", "Minecraft arenas and maps", "Free Minecraft builds", "Minecraft lobby builds", "Minecraft schematic downloads"],
+    skripts: ["Minecraft Skript resources", "Free Minecraft Skripts", "Minecraft Lifesteal Skript", "Minecraft report Skript", "Minecraft gameplay Skripts", "Minecraft server utility Skripts"],
+    plugins: ["Minecraft plugin resources", "Free Minecraft plugins", "Minecraft server plugins", "Minecraft admin plugins", "Minecraft gameplay plugins", "Premium Minecraft plugins"],
+    "server-setups": ["Premade Minecraft server setups", "Minecraft SMP setup download", "Minecraft Lifesteal server setup", "Minecraft Survival server setup", "Ready-to-use Minecraft server setup"],
+    configurations: ["Minecraft plugin configurations", "Minecraft menu configs", "Minecraft rank configs", "Minecraft crate configs", "Minecraft GUI configs", "Minecraft shop configurations"],
+    "textures-models": ["Minecraft texture packs", "Minecraft custom models", "Minecraft item models", "Minecraft UI textures", "Minecraft cosmetic models", "Minecraft resource pack assets"],
+    "discord-bot-setups": ["Discord bot setup for Minecraft server", "Discord moderation bot setup", "Discord command bot files", "Minecraft community Discord bot", "Discord automation setup"]
+  };
+  return phrases[category.id] || [`${category.name} resources`, `Free ${category.name}`, `Premium ${category.name}`];
 }
 
 function listingPageHtml(page = "resources", db = DB_DEFAULT) {
@@ -1658,6 +1688,10 @@ function listingPageHtml(page = "resources", db = DB_DEFAULT) {
           ${CONFIG.categories.map((category) => `<li><a href="/resources/${htmlEscape(category.id)}/">${htmlEscape(category.name)}</a> - ${htmlEscape(category.description)}</li>`).join("")}
         </ul>
       </div>
+      <div class="panel">
+        <h2>Popular Minecraft resource searches</h2>
+        <ul>${globalSearchPhrases().map(([label, href]) => `<li><a href="${htmlEscape(href)}">${htmlEscape(label)}</a></li>`).join("")}</ul>
+      </div>
       ${published.length ? `<div class="panel"><h2>Published resources</h2><ul>${published.map((resource) => `<li><a href="/${htmlEscape(resourcePagePath(resource))}">${htmlEscape(resource.name)}</a> - ${htmlEscape(resourceSeoDescription(resource))}</li>`).join("")}</ul></div>` : `<div class="panel"><h2>Published resources</h2><p>Published IconRealms resources will appear here after administrators release them.</p></div>`}
     </section>`);
 }
@@ -1682,7 +1716,11 @@ function categoryPageHtml(category, db = DB_DEFAULT) {
       <div id="category-seo-copy" class="panel">
         <h2>${htmlEscape(seo.title.replace(" | IconBuilds", ""))}</h2>
         <p>${htmlEscape(seo.description)}</p>
-        <p>IconBuilds publishes official IconRealms resources only, including free and premium downloads when available. Listings in this category are managed by IconRealms administrators and may include version support, dependencies, changelogs, reviews, compatibility tags, and protected download access.</p>
+        <p>Browse free and premium ${htmlEscape(category.name.toLowerCase())} with version support, dependencies, changelogs, reviews, compatibility tags, and protected downloads. Listings are managed by the IconBuilds team.</p>
+      </div>
+      <div class="panel">
+        <h2>Popular ${htmlEscape(category.name)} searches</h2>
+        <ul>${categorySearchPhrases(category).map((phrase) => `<li>${htmlEscape(phrase)}</li>`).join("")}</ul>
       </div>
       ${resources.length ? `<div class="panel"><h2>Published ${htmlEscape(category.name.toLowerCase())}</h2><ul>${resources.map((resource) => `<li><a href="/${htmlEscape(resourcePagePath(resource))}">${htmlEscape(resource.name)}</a> - ${htmlEscape(resourceSeoDescription(resource))}</li>`).join("")}</ul></div>` : `<div class="panel"><h2>Published ${htmlEscape(category.name.toLowerCase())}</h2><p>No ${htmlEscape(category.name.toLowerCase())} are published yet. This page will update when IconRealms releases resources in this category.</p></div>`}
     </section>`);

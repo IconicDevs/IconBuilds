@@ -278,7 +278,8 @@ function resourceSeoTitle(resource = {}) {
     "discord-bot-setups": "Discord Bot Setup"
   };
   const version = meaningfulSeoValues(resource.minecraftVersions).slice(0, 2).join(", ");
-  return clipMeta(`${resource.name} - ${categoryLabels[category.id] || category.name}${version ? ` for ${version}` : ""} | IconBuilds`, 70);
+  const price = resource.free ? "Free" : "Premium";
+  return clipMeta(`${resource.name} - ${price} ${categoryLabels[category.id] || category.name}${version ? ` for ${version}` : ""} | IconBuilds`, 70);
 }
 
 function resourceSeoDescription(resource = {}) {
@@ -295,11 +296,12 @@ function resourceSeoDescription(resource = {}) {
   const version = meaningfulSeoValues(resource.minecraftVersions).slice(0, 3).join(", ");
   const software = meaningfulSeoValues(resource.serverSoftware).slice(0, 3).join(", ");
   const tags = (resource.tags || []).filter(Boolean).slice(0, 4).join(", ");
-  const qualifiers = [version ? `Minecraft ${version}` : "", software ? `${software} servers` : ""].filter(Boolean).join(" and ");
+  const target = software && version ? `${software} servers running Minecraft ${version}` : software ? `${software} servers` : version ? `Minecraft ${version}` : "";
   const lead = compactText(resource.shortDescription || resource.description);
-  const separator = lead && /[.!?]$/.test(lead) ? " " : ". ";
-  const suffix = `${resource.free ? "Free" : "Premium"} official IconRealms ${categoryPhrases[category.id] || category.name.toLowerCase()} resource${qualifiers ? ` for ${qualifiers}` : ""}${tags ? ` with ${tags}.` : "."}`;
-  return clipMeta(`${lead}${separator}${suffix}`, 165);
+  const leadSentence = lead ? `${lead}${/[.!?]$/.test(lead) ? "" : "."}` : "";
+  const prefix = `${resource.free ? "Free" : "Premium"} ${categoryPhrases[category.id] || category.name.toLowerCase()}${target ? ` for ${target}` : ""}`;
+  const tagCopy = tags ? ` Includes ${tags}.` : "";
+  return clipMeta(`${prefix}. ${leadSentence}${tagCopy}`, 158);
 }
 
 function meaningfulSeoValues(values = []) {
@@ -587,19 +589,19 @@ function renderMarketplace(state, kind = "") {
   const selectedCategory = categoryById(baseFilters.category);
   const categoryMeta = baseFilters.category ? categorySeo(selectedCategory) : null;
   const marketplaceTitle = kind === "free"
-    ? "Free Minecraft Resources | Free Skripts, Plugins, Builds & Setups | IconBuilds"
+    ? "Free Minecraft Resources - Skripts, Plugins, Builds & Setups | IconBuilds"
     : kind === "premium"
-      ? "Premium Minecraft Resources | Paid Skripts, Plugins, Builds & Setups | IconBuilds"
+      ? "Premium Minecraft Resources - Paid Skripts, Plugins & Setups | IconBuilds"
       : categoryMeta
         ? categoryMeta.title
-        : "Minecraft Resource Marketplace | Skripts, Plugins, Builds & Setups | IconBuilds";
+        : "Minecraft Resources - Skripts, Plugins, Builds & Server Setups | IconBuilds";
   const marketplaceDescription = kind === "free"
-    ? "Browse free official IconRealms Minecraft resources, including free Skripts, plugins, builds, configurations, textures, models, and Discord bot setups."
+    ? "Download free Minecraft resources including free Skripts, plugins, builds, configurations, server assets, textures, models, and Discord resources."
     : kind === "premium"
-      ? "Browse premium official IconRealms Minecraft resources with secure checkout, protected downloads, purchase history, updates, and support."
+      ? "Download premium Minecraft resources including paid Skripts, plugins, server setups, builds, configurations, textures, models, and Discord bot setups."
       : categoryMeta
         ? categoryMeta.description
-        : "Search official IconRealms Minecraft resources including Skripts, plugins, builds, server setups, configurations, textures, models, and Discord bot setups.";
+        : "Search Minecraft resources including free Skripts, plugins, builds, server setups, configurations, texture packs, custom models, and Discord bot setups.";
   const marketplaceUrl = kind ? siteUrl(`${kind}/`) : baseFilters.category ? siteUrl(`resources/${encodeURIComponent(baseFilters.category)}/`) : siteUrl("resources/");
   setSeo(marketplaceTitle, marketplaceDescription, marketplaceUrl, CONFIG.seo.robotsIndex);
   layout(state, `<section class="section">
@@ -607,7 +609,7 @@ function renderMarketplace(state, kind = "") {
       <div>
         <p class="eyebrow">Marketplace</p>
         <h1 class="section-title">${escapeHtml(heading)}</h1>
-        <p class="section-copy">Browse official IconRealms resources. No public uploads, no seller dashboards, and no fake marketplace numbers.</p>
+        <p class="section-copy">Browse Minecraft Skripts, plugins, builds, server setups, configurations, texture packs, custom models, and Discord bot setups. No public uploads, no seller dashboards, and no fake marketplace numbers.</p>
       </div>
       <div class="count-row compact">
         ${countPill("published", counts.published)}
