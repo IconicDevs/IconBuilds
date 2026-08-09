@@ -298,6 +298,79 @@
       "reviewCount": 0,
       "downloadCount": 0,
       "purchaseCount": 0
+    },
+    {
+      "id": "res_62c37b5f-98cf-462c-9baa-ba5c134256b4",
+      "name": "SkCombat+",
+      "slug": "skcombat",
+      "shortDescription": "The #1 PVP / combat skript ever",
+      "description": "# ⚔️ SKCombat+ — Advanced Combat Management\n\n**SKCombat+** is an all-in-one Minecraft combat management Skript designed to make PvP more competitive, fair, and rewarding.\n\nInstead of relying on a large combat plugin, SKCombat+ provides the essential systems your server needs in a lightweight and customizable Skript.\n\n## ✨ Features\n\n⚔️ **Combat Tagging**\n\n* Automatically tags players when they enter PvP\n* 30-second combat timer\n* Live action-bar countdown\n* Combat resets when players continue fighting\n\n💀 **Combat Logging Protection**\n\n* Players who disconnect during combat are punished\n* Announces combat loggers to the server\n* Prevents players from escaping fights by simply leaving\n\n🛡️ **Safe Zone Protection**\n\n* Prevent combat-tagged players from entering protected regions\n* Works great for spawn and other PvP-safe areas\n\n🪽 **Combat Restrictions**\n\n* Disable Elytra flight during combat\n* Block Ender Pearls and Chorus Fruit\n* Built-in Ender Pearl cooldown\n* Built-in Enchanted Golden Apple cooldown\n* Configurable blocked commands during combat\n\n🔥 **Killstreak System**\n\n* Automatically tracks player killstreaks\n* Announces killstreak milestones\n* Configurable milestone intervals\n* Give temporary potion effects for reaching streaks\n* Killstreak resets on death\n\n🎁 **Kill Rewards**\n\n* Execute custom console commands when a player gets a kill\n* Configurable reward system\n* Toggle rewards without editing the entire Skript\n\n📦 **Loot Protection**\n\n* Optional protection for dropped PvP loot\n* Helps prevent unrelated players from immediately stealing drops\n* Configurable protection duration and radius\n\n☠️ **Custom Death Messages**\n\n* Multiple randomized PvP death messages\n* Can be enabled or disabled at any time\n* Makes player deaths feel less repetitive\n\n🏹 **PvP Feedback**\n\n* Hit confirmation sounds for bow shots\n* Combat status displayed directly through the action bar\n* Clear messages when entering or leaving combat restrictions\n\n🔧 **Admin Controls**\nSKCombat+ includes the `/cl` administration system for managing combat features directly in-game.\n\nAdministrators can toggle combat bypasses, remove combat tags, manage blocked commands, configure rewards, toggle loot protection, control Elytra/Ender restrictions, toggle custom death messages, reload the system, and more.\n\n**Permission:** `cl.admin`\n\n## 🚀 Perfect For\n\nSKCombat+ works especially well for:\n\n**Survival • SMP • Lifesteal • BoxPvP • Factions • PvP • Economy • Competitive Servers**\n\nTake control of your server's PvP with **SKCombat+** — combat tagging, anti-combat logging, killstreaks, restrictions, rewards, loot protection, and more in one system.\n",
+      "category": "skripts",
+      "tags": [
+        "skript",
+        "pvp",
+        "combat-log"
+      ],
+      "free": false,
+      "priceCents": 299,
+      "currency": "usd",
+      "ownershipLabel": "IconRealms",
+      "coverImage": "https://i.imgur.com/JdxJarE.png",
+      "showcaseImages": [],
+      "youtubeUrl": "",
+      "fileUrl": "https://drive.google.com/uc?export=download&id=1BNMVZmL8ynijI3kJDBQO96LbWzex4HsC",
+      "currentVersion": "1.0.0",
+      "dependencies": [
+        {
+          "name": "Skript",
+          "description": "",
+          "required": true,
+          "url": "",
+          "version": ""
+        },
+        {
+          "name": "Skbee",
+          "description": "",
+          "required": true,
+          "url": "",
+          "version": ""
+        },
+        {
+          "name": "skript-worldgaurd",
+          "description": "",
+          "required": true,
+          "url": "",
+          "version": ""
+        }
+      ],
+      "updates": [
+        {
+          "version": "1.0.0",
+          "title": "Release",
+          "date": "2026-08-09",
+          "changelog": "Released",
+          "fileLabel": ""
+        }
+      ],
+      "minecraftVersions": [],
+      "serverSoftware": [],
+      "compatibility": [],
+      "installation": "",
+      "supportInfo": "",
+      "notices": "",
+      "featured": true,
+      "status": "published",
+      "seoTitle": "SkCombat+ - Premium Minecraft Skript | IconBuilds",
+      "seoDescription": "Premium Minecraft Skript. The 1 PVP / combat skript ever. Includes skript, pvp, combat-log.",
+      "canonicalUrl": "https://minestore.org/resources/skcombat/",
+      "imageAlt": "SkCombat+ resource preview",
+      "updatedAt": "2026-08-09T01:21:02.114Z",
+      "createdAt": "2026-08-09T01:21:02.114Z",
+      "publishedAt": "2026-08-09T01:21:02.114Z",
+      "averageRating": 0,
+      "reviewCount": 0,
+      "downloadCount": 0,
+      "purchaseCount": 0
     }
   ],
   "reviews": [],
@@ -576,6 +649,13 @@
       "userId": "usr_07b82c34-7b7a-4d98-9172-867aea29b31d",
       "resourceId": "res_03601fb9-b1a9-445a-a3db-29d485cdd43b",
       "createdAt": "2026-07-30T20:50:07.191Z"
+    },
+    {
+      "id": "audit_2cdf00df-e448-42bd-9dcf-b443d1934724",
+      "type": "save-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_62c37b5f-98cf-462c-9baa-ba5c134256b4",
+      "createdAt": "2026-08-09T01:21:02.114Z"
     }
   ],
   "verificationChallenges": [
