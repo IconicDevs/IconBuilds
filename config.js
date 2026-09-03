@@ -206,7 +206,17 @@ const IconBuildsConfig = {
   stripe: {
     currency: "usd",
     successPath: "/checkout/success/",
-    cancelPath: "/resources/"
+    cancelPath: "/resources/",
+    productTaxCode: "txcd_10202000",
+    taxCodesByCategory: {
+      builds: "txcd_10505001",
+      skripts: "txcd_10202000",
+      plugins: "txcd_10202000",
+      "server-setups": "txcd_10202000",
+      configurations: "txcd_10202000",
+      "textures-models": "txcd_10505001",
+      "discord-bot-setups": "txcd_10202000"
+    }
   },
   footer: {
     links: [

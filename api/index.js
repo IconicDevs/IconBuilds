@@ -35,6 +35,21 @@ function normalizeCategoryId(id = "") {
   return ["graphics", "textures", "models", "discord-graphics"].includes(value) ? "textures-models" : value;
 }
 
+function stripeTaxCodeForResource(resource = {}) {
+  const category = normalizeCategoryId(resource.category);
+  const configuredCode = process.env.STRIPE_PRODUCT_TAX_CODE
+    || CONFIG.stripe?.taxCodesByCategory?.[category]
+    || CONFIG.stripe?.productTaxCode
+    || "txcd_10202000";
+  const taxCode = String(configuredCode || "").trim();
+  return /^txcd_\d{8}$/.test(taxCode) ? taxCode : "txcd_10202000";
+}
+
+function stripeManagedPaymentsSetting() {
+  const value = String(process.env.STRIPE_MANAGED_PAYMENTS_ENABLED || "").trim().toLowerCase();
+  return ["true", "false"].includes(value) ? value : "";
+}
+
 function send(res, status, payload, headers = {}) {
   res.writeHead(status, { ...JSON_HEADERS, ...responseHeaders(res, headers) });
   res.end(JSON.stringify(payload));
@@ -1333,7 +1348,7 @@ async function handleCreateCheckout(req, res, body) {
   if (resource.free || Number(resource.priceCents || 0) <= 0) return error(res, 400, "This resource is free.");
   if (hasAccess(db, user.id, resource.id)) return send(res, 200, { url: `${CONFIG.site.url}/account/`, message: "Already in your library." });
   if (!process.env.STRIPE_SECRET_KEY) return error(res, 503, "Stripe is not configured yet.");
-  const session = await stripeRequest("/v1/checkout/sessions", {
+  const checkoutFields = {
     mode: "payment",
     success_url: `${CONFIG.site.url}${CONFIG.stripe.successPath}?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${CONFIG.site.url}/resources/${resource.slug}/`,
@@ -1344,10 +1359,15 @@ async function handleCreateCheckout(req, res, body) {
     "line_items[0][price_data][unit_amount]": String(resource.priceCents),
     "line_items[0][price_data][product_data][name]": resource.name,
     "line_items[0][price_data][product_data][description]": resource.shortDescription || "IconBuilds resource",
+    "line_items[0][price_data][product_data][tax_code]": stripeTaxCodeForResource(resource),
     "metadata[userId]": user.id,
     "metadata[resourceId]": resource.id,
     allow_promotion_codes: "true"
-  });
+  };
+  if (resource.coverImage) checkoutFields["line_items[0][price_data][product_data][images][0]"] = resource.coverImage;
+  const managedPaymentsEnabled = stripeManagedPaymentsSetting();
+  if (managedPaymentsEnabled) checkoutFields["managed_payments[enabled]"] = managedPaymentsEnabled;
+  const session = await stripeRequest("/v1/checkout/sessions", checkoutFields);
   send(res, 200, { url: session.url, id: session.id });
 }
 
