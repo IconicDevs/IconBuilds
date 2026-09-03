@@ -1352,14 +1352,22 @@ async function handleCreateCheckout(req, res, body) {
 }
 
 async function stripeRequest(pathname, fields, method = "POST") {
-  const response = await fetch(`https://api.stripe.com${pathname}`, {
-    method,
+  const normalizedMethod = String(method || "POST").toUpperCase();
+  const query = new URLSearchParams(fields || {});
+  const url = normalizedMethod === "GET" && query.toString()
+    ? `https://api.stripe.com${pathname}?${query.toString()}`
+    : `https://api.stripe.com${pathname}`;
+  const options = {
+    method: normalizedMethod,
     headers: {
-      Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`,
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: new URLSearchParams(fields)
-  });
+      Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`
+    }
+  };
+  if (!["GET", "HEAD"].includes(normalizedMethod)) {
+    options.headers["Content-Type"] = "application/x-www-form-urlencoded";
+    options.body = query;
+  }
+  const response = await fetch(url, options);
   const json = await response.json().catch(() => ({}));
   if (!response.ok) {
     const err = new Error(json.error?.message || "Stripe request failed.");
