@@ -359,12 +359,12 @@
       "supportInfo": "",
       "notices": "",
       "featured": true,
-      "status": "published",
+      "status": "draft",
       "seoTitle": "SkCombat+ - Premium Minecraft Skript | IconBuilds",
       "seoDescription": "Premium Minecraft Skript. The 1 PVP / combat skript ever. Includes skript, pvp, combat-log.",
       "canonicalUrl": "https://minestore.org/resources/skcombat/",
       "imageAlt": "SkCombat+ resource preview",
-      "updatedAt": "2026-08-09T01:21:02.114Z",
+      "updatedAt": "2026-09-03T00:21:34.498Z",
       "createdAt": "2026-08-09T01:21:02.114Z",
       "publishedAt": "2026-08-09T01:21:02.114Z",
       "averageRating": 0,
@@ -656,6 +656,13 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_62c37b5f-98cf-462c-9baa-ba5c134256b4",
       "createdAt": "2026-08-09T01:21:02.114Z"
+    },
+    {
+      "id": "audit_c98accbc-ab9e-446e-8f34-e4d3971391da",
+      "type": "toggle-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_62c37b5f-98cf-462c-9baa-ba5c134256b4",
+      "createdAt": "2026-09-03T00:21:34.498Z"
     }
   ],
   "verificationChallenges": [
