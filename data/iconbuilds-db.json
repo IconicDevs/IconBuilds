@@ -395,8 +395,10 @@
       "priceCents": 99,
       "currency": "usd",
       "ownershipLabel": "IconRealms",
-      "coverImage": "",
-      "showcaseImages": [],
+      "coverImage": "https://minestore.org/uploads/images/coverImage/20260904194147-image-2026-09-04-154129610-572b2474.png",
+      "showcaseImages": [
+        "https://minestore.org/uploads/images/showcaseImages/20260904194242-image-2026-09-04-154222272-f414a063.png"
+      ],
       "youtubeUrl": "",
       "fileUrl": "https://drive.google.com/uc?export=download&id=1wTausAjGWfRz8pZgAA2tfT0IKJEnt6gx",
       "currentVersion": "1.0.0",
@@ -475,7 +477,7 @@
       "seoDescription": "Premium Minecraft build for Paper, Spigot, Bukkit servers. A fully featured Punishment GUI Skript powered by Skript, SkQuery, SkBee, and LiteBans. Includes.",
       "canonicalUrl": "https://minestore.org/resources/punishmentgui/",
       "imageAlt": "PunishmentGUI resource preview",
-      "updatedAt": "2026-09-04T19:36:32.490Z",
+      "updatedAt": "2026-09-04T19:42:46.902Z",
       "createdAt": "2026-09-04T19:36:32.490Z",
       "publishedAt": "",
       "averageRating": 0,
@@ -831,6 +833,13 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_7c513abe-0462-4fba-8dc3-54220312f48b",
       "createdAt": "2026-09-04T19:36:32.490Z"
+    },
+    {
+      "id": "audit_a7f69585-40ef-4f59-9caa-89342ebeb0b8",
+      "type": "save-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_7c513abe-0462-4fba-8dc3-54220312f48b",
+      "createdAt": "2026-09-04T19:42:46.902Z"
     }
   ],
   "verificationChallenges": [
