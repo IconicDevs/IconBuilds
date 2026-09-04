@@ -441,6 +441,8 @@ function layout(state, content) {
         <button class="nav-button mobile-toggle" type="button" aria-label="Open menu">Menu</button>
         <div class="nav-links">
           ${navLink("/resources/", "Resources")}
+          ${navLink("/forums/", "Forums")}
+          ${navLink("https://minecraftlisting.org", "Server list")}
           ${navLink("/free/", "Free")}
           ${navLink("/premium/", "Premium")}
           ${navLink("/support/", "Support")}
@@ -1691,12 +1693,14 @@ function renderStaticPage(state, key) {
     return;
   }
   const pages = {
+    forums: ["Forums", "Coming soon.."],
     refund: ["Refund Policy", "Digital resource purchases may be reviewed for refunds when access fails, the resource is materially misrepresented, or support cannot resolve a verified issue."],
     support: ["Support", `Need help with purchases, downloads, verification, or resource access? Email ${CONFIG.site.supportEmail} or join the IconRealms Discord.`],
     "not-found": ["Page Not Found", "That page does not exist or the resource has not been published."]
   };
   const [title, body] = pages[key] || pages["not-found"];
-  setSeo(`${title} | IconBuilds`, body, `${CONFIG.site.url}/${key === "not-found" ? "" : `${key}/`}`, key === "not-found" ? CONFIG.seo.robotsPrivate : CONFIG.seo.robotsIndex);
+  const robots = ["forums", "not-found"].includes(key) ? CONFIG.seo.robotsPrivate : CONFIG.seo.robotsIndex;
+  setSeo(`${title} | IconBuilds`, body, `${CONFIG.site.url}/${key === "not-found" ? "" : `${key}/`}`, robots);
   layout(state, `<section class="section"><div class="panel"><h1 class="section-title">${escapeHtml(title)}</h1><p class="section-copy">${escapeHtml(body)}</p></div></section>`);
 }
 
