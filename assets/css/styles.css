@@ -1267,6 +1267,11 @@ img {
   .category-poster {
     min-height: 72px;
   }
+
+  .image-upload-row,
+  .image-preview-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .field-help {
@@ -1318,6 +1323,108 @@ img {
 .multi-options .check-row {
   font-size: .84rem;
   font-weight: 750;
+}
+
+.image-field {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: rgba(15, 22, 35, .55);
+}
+
+.image-source-tabs {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(92px, 1fr));
+  width: min(100%, 260px);
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, .22);
+  border-radius: 6px;
+  background: #0f1623;
+}
+
+.source-option {
+  min-height: 36px;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.source-option.active {
+  color: #fff7ed;
+  background: linear-gradient(135deg, rgba(249, 115, 22, .62), rgba(251, 191, 36, .48));
+}
+
+.image-source-panel[hidden] {
+  display: none;
+}
+
+.image-upload-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.file-input {
+  min-height: 42px;
+  width: 100%;
+  padding: 9px;
+  border: 1px solid rgba(148, 163, 184, .22);
+  border-radius: var(--radius);
+  color: var(--text);
+  background: #0f1623;
+}
+
+.image-upload-status {
+  min-height: 18px;
+  margin: 0;
+  color: #fde68a;
+  font-size: .86rem;
+  font-weight: 800;
+}
+
+.image-upload-status:empty {
+  display: none;
+}
+
+.image-upload-status.danger {
+  color: #fecdd3;
+}
+
+.image-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.image-preview-grid:empty {
+  display: none;
+}
+
+.image-preview-grid figure {
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, .2);
+  border-radius: 6px;
+  background: #0f1623;
+}
+
+.image-preview-grid img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.image-preview-grid figcaption {
+  overflow: hidden;
+  padding: 6px 7px;
+  color: var(--muted);
+  font-size: .72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .admin-subsection {

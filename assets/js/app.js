@@ -134,6 +134,72 @@ async function request(action, payload = {}, method = "POST") {
   }
 }
 
+function formatBytes(bytes = 0) {
+  const size = Number(bytes || 0);
+  if (size >= 1024 * 1024) return `${(size / 1024 / 1024).toFixed(1)} MB`;
+  if (size >= 1024) return `${Math.ceil(size / 1024)} KB`;
+  return `${size} B`;
+}
+
+async function uploadImageFile(file, purpose = "resource") {
+  if (!file) throw new Error("Choose an image to upload.");
+  const maxBytes = Number(CONFIG.resource.maxImageBytes || 5 * 1024 * 1024);
+  if (file.size > maxBytes) throw new Error(`Image must be ${formatBytes(maxBytes)} or smaller.`);
+  const allowed = CONFIG.resource.allowedImageExtensions || [".png", ".jpg", ".jpeg", ".webp", ".gif"];
+  const extension = `.${(file.name.split(".").pop() || "").toLowerCase()}`;
+  if (!allowed.includes(extension)) throw new Error(`Upload one of these image types: ${allowed.join(", ")}.`);
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), CONFIG.api.requestTimeoutMs || 25000);
+  try {
+    const body = new FormData();
+    body.append("purpose", purpose);
+    body.append("image", file, file.name);
+    let lastError = null;
+    for (const base of apiBasePaths()) {
+      const search = new URLSearchParams({ action: "uploadImage" });
+      const url = `${base}${base.includes("?") ? "&" : "?"}${search.toString()}`;
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: authHeaders(),
+          body,
+          signal: controller.signal,
+          cache: "no-store"
+        });
+        const text = await response.text();
+        let json = {};
+        try {
+          json = text ? JSON.parse(text) : {};
+        } catch {
+          const sameOriginApi = url.startsWith(`${location.origin}/api`) || url.startsWith("/api");
+          const hint = sameOriginApi
+            ? `The static GitHub Pages site tried ${url}. Set config.api.productionBasePath to the Vercel endpoint.`
+            : `The Vercel API at ${url} did not return JSON. Check that api/index.js is deployed.`;
+          const error = new Error(`The API did not return JSON (${response.status}). ${hint}`);
+          error.status = response.status;
+          throw error;
+        }
+        if (!response.ok || json.error) {
+          const error = new Error(json.error || "Image upload failed.");
+          error.status = response.status;
+          throw error;
+        }
+        return json;
+      } catch (error) {
+        lastError = error;
+        const shouldTryNext = error.name === "AbortError" || /failed to fetch|networkerror|cors|did not return json/i.test(error.message || "");
+        if (!shouldTryNext) throw error;
+      }
+    }
+    throw lastError || new Error("The IconBuilds API is not configured.");
+  } catch (error) {
+    if (error.name === "AbortError") throw new Error("Image upload timed out. Try a smaller image.");
+    throw error;
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
 async function getState(extra = {}) {
   const state = await request("state", extra, "GET");
   if (state.user && store.session) store.session = { ...store.session, user: state.user };
@@ -1120,6 +1186,34 @@ function stat(label, value) {
   return `<div class="card stat-card"><p class="muted">${escapeHtml(label)}</p><h3>${escapeHtml(String(value))}</h3></div>`;
 }
 
+function imageUploadField(name, label, value = "", options = {}) {
+  const multiple = Boolean(options.multiple);
+  const max = multiple ? Number(CONFIG.resource.showcaseImageLimit || 4) : 1;
+  const allowed = CONFIG.resource.allowedImageExtensions || [".png", ".jpg", ".jpeg", ".webp", ".gif"];
+  const accept = allowed.join(",");
+  const control = multiple
+    ? `<textarea class="textarea compact" name="${escapeHtml(name)}" data-image-value placeholder="Paste one image URL per line">${escapeHtml(value)}</textarea>`
+    : `<input class="input" name="${escapeHtml(name)}" data-image-value value="${escapeHtml(value)}" placeholder="Paste an image URL">`;
+  return `<div class="field image-field" data-image-field="${escapeHtml(name)}" data-image-max="${max}">
+    <label>${escapeHtml(label)}</label>
+    <div class="image-source-tabs" role="group" aria-label="${escapeHtml(label)} source">
+      <button type="button" class="source-option active" data-image-tab="url">URL</button>
+      <button type="button" class="source-option" data-image-tab="upload">Upload</button>
+    </div>
+    <div class="image-source-panel active" data-image-panel="url">${control}</div>
+    <div class="image-source-panel" data-image-panel="upload" hidden>
+      <div class="image-upload-row">
+        <input class="file-input" type="file" accept="${escapeHtml(accept)}" ${multiple ? "multiple" : ""} data-image-file>
+        <button class="button" type="button" data-upload-image>${multiple ? "Upload images" : "Upload image"}</button>
+      </div>
+      <p class="field-help">Uploads are saved to GitHub Pages and the URL is added here automatically. Max ${escapeHtml(formatBytes(CONFIG.resource.maxImageBytes || 5 * 1024 * 1024))} each.</p>
+    </div>
+    <p class="image-upload-status" data-image-status></p>
+    <div class="image-preview-grid" data-image-preview></div>
+    <p class="field-help">${multiple ? `Use up to ${max} showcase images.` : "Use a wide image for the main resource preview."}</p>
+  </div>`;
+}
+
 function adminResourceForm(resource = {}) {
   const currentVersion = resource.currentVersion || "1.0.0";
   const existingUpdates = resource.updates || [];
@@ -1132,8 +1226,8 @@ function adminResourceForm(resource = {}) {
     <div class="form-grid"><div class="field"><label>Category</label><select class="select" name="category">${CONFIG.categories.map((cat) => `<option value="${cat.id}" ${normalizeCategoryId(resource.category) === cat.id ? "selected" : ""}>${escapeHtml(cat.name)}</option>`).join("")}</select></div><div class="field"><label>Ownership label</label><select class="select" name="ownershipLabel">${CONFIG.resource.ownershipLabels.map((label) => `<option ${resource.ownershipLabel === label ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}</select></div></div>
     <div class="form-grid"><div class="field"><label>Free or paid</label><select class="select" name="free"><option value="true" ${resource.free ? "selected" : ""}>Free</option><option value="false" ${!resource.free ? "selected" : ""}>Paid</option></select></div><div class="field"><label>Price</label><input class="input" name="price" type="number" min="0" step="0.01" value="${escapeHtml(priceInputValue(resource))}" placeholder="1.99"><p class="field-help">Use normal dollars, like 1.99. IconBuilds converts it internally.</p></div></div>
     <div class="form-grid"><div class="field"><label>Status</label><select class="select" name="status"><option value="draft" ${resource.status !== "published" ? "selected" : ""}>Draft</option><option value="published" ${resource.status === "published" ? "selected" : ""}>Published</option></select></div><label class="check-row"><input type="checkbox" name="featured" ${resource.featured ? "checked" : ""}> Featured</label></div>
-    <div class="field"><label>Cover image URL</label><input class="input" name="coverImage" value="${escapeHtml(resource.coverImage || "")}"></div>
-    <div class="field"><label>Showcase image URLs, one per line, max 4</label><textarea class="textarea" name="showcaseImages">${escapeHtml((resource.showcaseImages || []).join("\n"))}</textarea></div>
+    ${imageUploadField("coverImage", "Cover image", resource.coverImage || "")}
+    ${imageUploadField("showcaseImages", "Showcase images", (resource.showcaseImages || []).join("\n"), { multiple: true })}
     <div class="form-grid"><div class="field"><label>YouTube trailer</label><input class="input" name="youtubeUrl" value="${escapeHtml(resource.youtubeUrl || "")}"></div><div class="field"><label>Protected download source</label><input class="input" name="fileUrl" value="${escapeHtml(resource.fileUrl || "")}" placeholder="Google Drive link or direct .zip/.jar URL"><p class="field-help">Paste a Google Drive file link or a direct file URL. IconBuilds hides it from public resource data and gives users a temporary download link after access checks.</p></div></div>
     <div class="form-grid"><div class="field"><label>Resource version</label><input class="input" name="currentVersion" value="${escapeHtml(currentVersion)}" placeholder="1.0.0"><p class="field-help">Use 1.0.0 for the first release. Change this when you publish an update.</p></div><div class="field"><label>Tags</label><input class="input" name="tags" value="${escapeHtml((resource.tags || []).join(", "))}" placeholder="skript, lifesteal, dupe"></div></div>
     <div class="form-grid">${multiSelectField("minecraftVersions", "Minecraft versions", CONFIG.filters.minecraftVersions, resource.minecraftVersions || [], "Choose versions")}${multiSelectField("serverSoftware", "Server software", CONFIG.filters.serverSoftware, resource.serverSoftware || [], "Choose software")}</div>
@@ -1159,6 +1253,7 @@ function adminReviewTable(reviews) {
 
 function bindAdmin(state) {
   setupMultiSelects();
+  setupImageUploadFields();
   $("#resourceForm")?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -1229,6 +1324,98 @@ function csv(value = "") {
 
 function selectedValues(form, name) {
   return [...new Set(form.getAll(name).map(clean).filter(Boolean))];
+}
+
+function imageFieldUrls(field) {
+  const control = $("[data-image-value]", field);
+  if (!control) return [];
+  const max = Number(field.dataset.imageMax || 1);
+  const values = control.tagName === "TEXTAREA" ? lines(control.value) : [clean(control.value)].filter(Boolean);
+  return values.slice(0, max);
+}
+
+function setImageFieldUrls(field, urls = []) {
+  const control = $("[data-image-value]", field);
+  if (!control) return;
+  const max = Number(field.dataset.imageMax || 1);
+  const next = urls.map(clean).filter(Boolean).slice(0, max);
+  control.value = control.tagName === "TEXTAREA" ? next.join("\n") : (next[0] || "");
+  renderImagePreview(field);
+}
+
+function setImageUploadStatus(field, message = "", danger = false) {
+  const status = $("[data-image-status]", field);
+  if (!status) return;
+  status.textContent = message;
+  status.classList.toggle("danger", Boolean(danger));
+}
+
+function renderImagePreview(field) {
+  const preview = $("[data-image-preview]", field);
+  if (!preview) return;
+  const urls = imageFieldUrls(field);
+  preview.innerHTML = urls.length
+    ? urls.map((url) => `<figure><img src="${escapeHtml(url)}" alt=""><figcaption>${escapeHtml(url.replace(/^https?:\/\//i, "").slice(0, 48))}</figcaption></figure>`).join("")
+    : "";
+}
+
+function activateImagePanel(field, mode = "url") {
+  $$("[data-image-tab]", field).forEach((button) => button.classList.toggle("active", button.dataset.imageTab === mode));
+  $$("[data-image-panel]", field).forEach((panel) => {
+    const active = panel.dataset.imagePanel === mode;
+    panel.hidden = !active;
+    panel.classList.toggle("active", active);
+  });
+}
+
+function setupImageUploadFields() {
+  $$("[data-image-field]").forEach((field) => {
+    renderImagePreview(field);
+    const control = $("[data-image-value]", field);
+    control?.addEventListener("input", () => renderImagePreview(field));
+    $$("[data-image-tab]", field).forEach((button) => {
+      button.addEventListener("click", () => activateImagePanel(field, button.dataset.imageTab));
+    });
+    const button = $("[data-upload-image]", field);
+    const fileInput = $("[data-image-file]", field);
+    button?.addEventListener("click", async () => {
+      const files = [...(fileInput?.files || [])];
+      if (!files.length) {
+        toast("Choose an image first.");
+        return;
+      }
+      const max = Number(field.dataset.imageMax || 1);
+      const existing = max > 1 ? imageFieldUrls(field) : [];
+      const openSlots = max - existing.length;
+      if (openSlots <= 0) {
+        toast(`Remove an image URL before adding another. Max ${max}.`);
+        return;
+      }
+      const selected = files.slice(0, max > 1 ? openSlots : 1);
+      const previous = button.textContent;
+      button.disabled = true;
+      button.textContent = selected.length > 1 ? "Uploading..." : "Uploading...";
+      setImageUploadStatus(field, "Uploading image...");
+      try {
+        const uploaded = [];
+        for (const file of selected) {
+          const result = await uploadImageFile(file, field.dataset.imageField || "resource");
+          uploaded.push(result.url);
+        }
+        setImageFieldUrls(field, max > 1 ? [...existing, ...uploaded] : uploaded);
+        activateImagePanel(field, "url");
+        setImageUploadStatus(field, selected.length > 1 ? "Images uploaded." : "Image uploaded.");
+        if (files.length > selected.length) toast(`Only ${selected.length} image${selected.length === 1 ? "" : "s"} uploaded because this field allows ${max}.`);
+        if (fileInput) fileInput.value = "";
+      } catch (error) {
+        setImageUploadStatus(field, error.message, true);
+        toast(error.message);
+      } finally {
+        button.disabled = false;
+        button.textContent = previous;
+      }
+    });
+  });
 }
 
 function priceInputValue(resource = {}) {

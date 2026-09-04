@@ -245,7 +245,7 @@ function validateOrigin(req, action) {
 
 function rateLimit(req, action) {
   const windowMs = 60 * 1000;
-  const sensitive = new Set(["login", "register", "resendVerification", "changeVerificationEmail", "verifyEmail", "createCheckout", "createDonationCheckout", "download"]);
+  const sensitive = new Set(["login", "register", "resendVerification", "changeVerificationEmail", "verifyEmail", "createCheckout", "createDonationCheckout", "uploadImage", "download"]);
   const limit = sensitive.has(action) ? 20 : 160;
   const key = `${hashIp(req)}:${action || "default"}`;
   const current = Date.now();
@@ -342,7 +342,8 @@ function githubConfig() {
     branch: process.env.GITHUB_BRANCH || "main",
     dbPath: process.env.GITHUB_DB_PATH || "data/iconbuilds-db.json",
     backupPath: process.env.GITHUB_DB_BACKUP_PATH || "data/iconbuilds-db.backup.json",
-    sitemapPath: process.env.GITHUB_SITEMAP_PATH || "sitemap.xml"
+    sitemapPath: process.env.GITHUB_SITEMAP_PATH || "sitemap.xml",
+    uploadsPath: process.env.GITHUB_UPLOADS_PATH || "uploads/images"
   };
 }
 
@@ -444,6 +445,23 @@ async function writeGithubTextFile(filePath, text, message) {
   });
 }
 
+async function writeGithubBinaryFile(filePath, buffer, message) {
+  const cfg = githubConfig();
+  const sha = await githubFileSha(filePath);
+  const url = `https://api.github.com/repos/${cfg.repo}/contents/${encodeURIComponent(filePath).replace(/%2F/g, "/")}`;
+  const body = {
+    message,
+    content: Buffer.from(buffer).toString("base64"),
+    branch: cfg.branch
+  };
+  if (sha) body.sha = sha;
+  return githubFetch(url, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+}
+
 async function deleteGithubFile(filePath, message) {
   const cfg = githubConfig();
   const sha = await githubFileSha(filePath);
@@ -492,6 +510,17 @@ async function writeStaticTextFile(filePath, text, message) {
   const target = path.resolve(process.cwd(), filePath);
   await fs.mkdir(path.dirname(target), { recursive: true });
   await fs.writeFile(target, String(text || ""));
+  return null;
+}
+
+async function writeStaticBinaryFile(filePath, buffer, message) {
+  if (githubConfig()) return writeGithubBinaryFile(filePath, buffer, message);
+  const target = path.resolve(process.cwd(), filePath);
+  const root = path.resolve(process.cwd());
+  const relative = path.relative(root, target);
+  if (relative.startsWith("..") || path.isAbsolute(relative)) throw Object.assign(new Error("Upload path is not allowed."), { status: 400 });
+  await fs.mkdir(path.dirname(target), { recursive: true });
+  await fs.writeFile(target, buffer);
   return null;
 }
 
@@ -565,6 +594,11 @@ async function readBody(req, limitBytes = 1024 * 1024) {
   return Buffer.concat(chunks);
 }
 
+function bodyLimitForAction(action) {
+  if (action === "uploadImage") return Number(CONFIG.resource.maxImageBytes || 5 * 1024 * 1024) + 1024 * 1024;
+  return 1024 * 1024;
+}
+
 async function jsonBody(req) {
   const raw = await readBody(req);
   if (!raw.length) return {};
@@ -575,6 +609,92 @@ async function jsonBody(req) {
     err.status = 400;
     throw err;
   }
+}
+
+function multipartParam(disposition = "", key = "") {
+  const match = String(disposition).match(new RegExp(`${key}="([^"]*)"`, "i"));
+  return match ? match[1] : "";
+}
+
+function parseMultipartForm(req, raw) {
+  const contentType = String(req.headers["content-type"] || "");
+  const boundary = contentType.match(/boundary=(?:"([^"]+)"|([^;]+))/i)?.[1] || contentType.match(/boundary=(?:"([^"]+)"|([^;]+))/i)?.[2];
+  if (!boundary) {
+    const err = new Error("Upload form data is missing a boundary.");
+    err.status = 400;
+    throw err;
+  }
+  const delimiter = Buffer.from(`--${boundary}`);
+  const headerEnd = Buffer.from("\r\n\r\n");
+  const fields = {};
+  const files = [];
+  let position = raw.indexOf(delimiter);
+  while (position !== -1) {
+    position += delimiter.length;
+    if (raw.slice(position, position + 2).toString("ascii") === "--") break;
+    if (raw.slice(position, position + 2).toString("ascii") === "\r\n") position += 2;
+    const headerIndex = raw.indexOf(headerEnd, position);
+    if (headerIndex === -1) break;
+    const headerText = raw.slice(position, headerIndex).toString("utf8");
+    const nextDelimiter = raw.indexOf(delimiter, headerIndex + headerEnd.length);
+    if (nextDelimiter === -1) break;
+    let contentEnd = nextDelimiter;
+    if (contentEnd >= 2 && raw[contentEnd - 2] === 13 && raw[contentEnd - 1] === 10) contentEnd -= 2;
+    const headers = {};
+    for (const line of headerText.split(/\r\n/)) {
+      const splitAt = line.indexOf(":");
+      if (splitAt > 0) headers[line.slice(0, splitAt).trim().toLowerCase()] = line.slice(splitAt + 1).trim();
+    }
+    const disposition = headers["content-disposition"] || "";
+    const name = multipartParam(disposition, "name");
+    const filename = multipartParam(disposition, "filename");
+    const content = raw.slice(headerIndex + headerEnd.length, contentEnd);
+    if (name && filename) files.push({ name, filename, contentType: headers["content-type"] || "", content });
+    else if (name) fields[name] = content.toString("utf8");
+    position = nextDelimiter;
+  }
+  return { fields, files };
+}
+
+function detectImageExtension(buffer) {
+  if (buffer.length >= 8 && buffer.slice(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return "png";
+  if (buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return "jpg";
+  const firstSix = buffer.slice(0, 6).toString("ascii");
+  if (firstSix === "GIF87a" || firstSix === "GIF89a") return "gif";
+  if (buffer.length >= 12 && buffer.slice(0, 4).toString("ascii") === "RIFF" && buffer.slice(8, 12).toString("ascii") === "WEBP") return "webp";
+  return "";
+}
+
+function uploadImageInfo(file) {
+  const buffer = file?.content || Buffer.alloc(0);
+  const maxBytes = Number(CONFIG.resource.maxImageBytes || 5 * 1024 * 1024);
+  if (!buffer.length) throw Object.assign(new Error("Choose an image to upload."), { status: 400 });
+  if (buffer.length > maxBytes) throw Object.assign(new Error(`Image must be ${Math.round(maxBytes / 1024 / 1024)} MB or smaller.`), { status: 413 });
+  const contentType = String(file.contentType || "").toLowerCase();
+  if (contentType && !contentType.startsWith("image/")) throw Object.assign(new Error("Upload an image file."), { status: 400 });
+  const extension = detectImageExtension(buffer);
+  const allowed = (CONFIG.resource.allowedImageExtensions || [".png", ".jpg", ".jpeg", ".webp", ".gif"]).map((item) => String(item).replace(/^\./, "").toLowerCase());
+  if (!extension || !allowed.includes(extension)) throw Object.assign(new Error("Upload a PNG, JPG, WEBP, or GIF image."), { status: 400 });
+  return { buffer, extension };
+}
+
+function uploadFolder(purpose = "resource") {
+  const root = githubConfig()?.uploadsPath || process.env.GITHUB_UPLOADS_PATH || "uploads/images";
+  const cleanRoot = String(root || "uploads/images").replace(/\\/g, "/").split("/").map((part) => part.replace(/[^a-zA-Z0-9._-]/g, "-")).filter((part) => part && part !== "." && part !== "..").join("/") || "uploads/images";
+  const cleanPurpose = String(purpose || "resource").replace(/[^a-zA-Z0-9_-]/g, "-").slice(0, 40) || "resource";
+  return `${cleanRoot}/${cleanPurpose}`;
+}
+
+function uploadFileName(originalName = "image", extension = "png") {
+  const nameOnly = String(originalName || "image").replace(/\\/g, "/").split("/").pop() || "image";
+  const parsed = path.parse(nameOnly).name;
+  const cleanName = parsed.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48).toLowerCase() || "image";
+  const stamp = new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
+  return `${stamp}-${cleanName}-${crypto.randomBytes(4).toString("hex")}.${extension}`;
+}
+
+function publicFileUrl(filePath) {
+  return `${CONFIG.site.url.replace(/\/+$/, "")}/${String(filePath || "").replace(/^\/+/, "")}`;
 }
 
 async function currentUser(req, db) {
@@ -1365,6 +1485,28 @@ async function handleAdmin(req, res, body) {
   send(res, 200, result.result);
 }
 
+async function handleUploadImage(req, res, raw) {
+  const { db } = await readStore();
+  requireAdmin(await currentUser(req, db));
+  if (!githubConfig() && process.env.VERCEL) {
+    return error(res, 503, "Image uploads need GitHub storage variables in Vercel.");
+  }
+  const form = parseMultipartForm(req, raw);
+  const file = form.files.find((item) => item.name === "image");
+  const { buffer, extension } = uploadImageInfo(file);
+  const folder = uploadFolder(form.fields.purpose || "resource");
+  const fileName = uploadFileName(file.filename, extension);
+  const filePath = `${folder}/${fileName}`;
+  await writeStaticBinaryFile(filePath, buffer, `Upload IconBuilds image ${fileName}`);
+  send(res, 200, {
+    ok: true,
+    url: publicFileUrl(filePath),
+    path: filePath,
+    fileName,
+    size: buffer.length
+  });
+}
+
 async function handleCreateCheckout(req, res, body) {
   const { db } = await readStore();
   const user = requireVerified(await currentUser(req, db));
@@ -2029,8 +2171,9 @@ async function handler(req, res) {
     if (action === "googleCallback") return await handleGoogleCallback(req, res, url);
     if (action === "downloadFile") return await handleDownloadFile(req, res, url);
     if (req.method === "GET") return await handleState(req, res, Object.fromEntries(url.searchParams.entries()));
-    const raw = await readBody(req);
+    const raw = await readBody(req, bodyLimitForAction(action));
     if (action === "stripeWebhook" || url.pathname.includes("stripe-webhook")) return await handleStripeWebhook(req, res, raw);
+    if (action === "uploadImage") return await handleUploadImage(req, res, raw);
     let body = {};
     try {
       body = raw.length ? JSON.parse(raw.toString("utf8")) : {};

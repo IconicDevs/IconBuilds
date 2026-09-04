@@ -174,6 +174,7 @@ const IconBuildsConfig = {
     coverImageLimit: 1,
     showcaseImageLimit: 4,
     descriptionImageLimit: 12,
+    allowedImageExtensions: [".png", ".jpg", ".jpeg", ".webp", ".gif"],
     allowedFileExtensions: [".zip", ".jar", ".sk", ".schem", ".schematic", ".mcpack", ".mcaddon", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".pdf", ".txt", ".yml", ".yaml", ".json"],
     extensionlessDownloadHosts: ["drive.google.com", "drive.usercontent.google.com"],
     maxFileBytes: 250 * 1024 * 1024,
