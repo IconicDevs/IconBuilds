@@ -379,10 +379,114 @@
       "reviewCount": 0,
       "downloadCount": 0,
       "purchaseCount": 0
+    },
+    {
+      "id": "res_7c513abe-0462-4fba-8dc3-54220312f48b",
+      "name": "PunishmentGUI",
+      "slug": "punishmentgui",
+      "shortDescription": "A fully featured Punishment GUI Skript powered by Skript, SkQuery, SkBee, and LiteBans",
+      "description": "Punishment GUI Skript – The all-in-one moderation solution for Minecraft servers.\nBuilt using Skript, SkQuery, SkBee, and LiteBans, this system provides staff with a sleek, intuitive graphical interface for managing punishments efficiently.\n\n\nIt comes fully loaded with a wide range of predefined offenses, each featuring escalating punishment tiers that persist across sessions. Color-coded indicators make it easy to see a player’s offense history at a glance, ensuring fair and consistent enforcement.\n\n\nVulcan integration takes moderation to the next level by providing alt detection, detailed punishment history, and comprehensive logs, giving staff all the information they need before issuing a punishment. Combined with LiteBans’ powerful banning system, every action is recorded, synchronized, and enforceable across your server network.\nDo not redistribute this Skript under any circumstances.\nDo not claim credit for any part of this Skript.\nYou are free to modify it for your personal use.\nI don’t expect public credit, but I do expect you not to claim it as your own.",
+      "category": "builds",
+      "tags": [
+        "Skript",
+        "Moderation"
+      ],
+      "free": false,
+      "priceCents": 99,
+      "currency": "usd",
+      "ownershipLabel": "IconRealms",
+      "coverImage": "",
+      "showcaseImages": [],
+      "youtubeUrl": "",
+      "fileUrl": "https://drive.google.com/uc?export=download&id=1wTausAjGWfRz8pZgAA2tfT0IKJEnt6gx",
+      "currentVersion": "1.0.0",
+      "dependencies": [
+        {
+          "name": "Vulcan (Optional",
+          "description": "",
+          "required": true,
+          "url": "",
+          "version": ""
+        },
+        {
+          "name": "for the punishment logs",
+          "description": "",
+          "required": true,
+          "url": "",
+          "version": ""
+        },
+        {
+          "name": "alts",
+          "description": "",
+          "required": true,
+          "url": "",
+          "version": ""
+        },
+        {
+          "name": "and history)",
+          "description": "",
+          "required": true,
+          "url": "",
+          "version": ""
+        },
+        {
+          "name": "Litebans (paid)",
+          "description": "",
+          "required": true,
+          "url": "",
+          "version": ""
+        },
+        {
+          "name": "Skript",
+          "description": "",
+          "required": true,
+          "url": "",
+          "version": ""
+        },
+        {
+          "name": "Skbee",
+          "description": "",
+          "required": true,
+          "url": "",
+          "version": ""
+        }
+      ],
+      "updates": [],
+      "minecraftVersions": [
+        "Any"
+      ],
+      "serverSoftware": [
+        "Paper",
+        "Spigot",
+        "Bukkit",
+        "Velocity"
+      ],
+      "compatibility": [
+        "Java",
+        "Cross-Play",
+        "Proxy"
+      ],
+      "installation": "",
+      "supportInfo": "",
+      "notices": "",
+      "featured": false,
+      "status": "draft",
+      "seoTitle": "PunishmentGUI - Premium Minecraft Build | IconBuilds",
+      "seoDescription": "Premium Minecraft build for Paper, Spigot, Bukkit servers. A fully featured Punishment GUI Skript powered by Skript, SkQuery, SkBee, and LiteBans. Includes.",
+      "canonicalUrl": "https://minestore.org/resources/punishmentgui/",
+      "imageAlt": "PunishmentGUI resource preview",
+      "updatedAt": "2026-09-04T19:36:32.490Z",
+      "createdAt": "2026-09-04T19:36:32.490Z",
+      "publishedAt": "",
+      "averageRating": 0,
+      "reviewCount": 0,
+      "downloadCount": 0,
+      "purchaseCount": 0
     }
   ],
   "reviews": [],
   "purchases": [],
+  "donations": [],
   "downloads": [
     {
       "id": "down_c424c739-8abd-468b-8fab-8c1bd4aad599",
@@ -720,6 +824,13 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_03601fb9-b1a9-445a-a3db-29d485cdd43b",
       "createdAt": "2026-09-04T18:59:26.913Z"
+    },
+    {
+      "id": "audit_ad1f5ce0-1d0b-4a53-a6bf-4ee63dfede31",
+      "type": "save-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_7c513abe-0462-4fba-8dc3-54220312f48b",
+      "createdAt": "2026-09-04T19:36:32.490Z"
     }
   ],
   "verificationChallenges": [
