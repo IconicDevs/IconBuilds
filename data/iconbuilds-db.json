@@ -255,7 +255,7 @@
       "name": "Stream Skript",
       "slug": "stream-skript",
       "shortDescription": "Announce your stream to all the players!",
-      "description": "",
+      "description": "# Stream Announcements\n\nGive your server's media creators an easy way to announce when they go live!\n\nStream Announcements allows authorized players to broadcast their YouTube or Twitch streams directly in Minecraft chat. Announcements include a clickable link that sends players straight to the creator's stream.\n\n## Features\n\n- YouTube stream announcements\n- Twitch stream announcements\n- Clickable stream links in chat\n- Hover text on stream links\n- Separate permissions for YouTube and Twitch creators\n- Basic link validation to prevent incorrect platform links\n- Server-wide stream announcements\n- Custom colored announcements for each platform\n- Built-in command help\n- Tab completion for `/stream`\n- Admin toggle to temporarily disable all stream announcements\n\n## Commands\n\n`/stream youtube <link>`\nAnnounces a YouTube stream to the entire server.\n\n`/stream twitch <link>`\nAnnounces a Twitch stream to the entire server.\n\n`/stream close`\nAllows authorized staff to disable or re-enable stream announcements.\n\n`/stream`\nDisplays the available stream commands.\n\n## Permissions\n\n`stream.youtube.media`\nAllows a player to announce a YouTube stream.\n\n`stream.twitch.media`\nAllows a player to announce a Twitch stream.\n\n`stream.close`\nAllows staff to enable or disable the stream announcement system.\n\n## How It Works\n\nWhen a media creator goes live, they can simply run:\n\n`/stream youtube <link>`\n\nor\n\n`/stream twitch <link>`\n\nThe server will broadcast their stream to every online player with a clickable **CLICK HERE** button.\n\nThe Skript also checks that the submitted link matches the selected platform before allowing the announcement.\n\nPerfect for servers with YouTubers, Twitch streamers, media ranks, or creator programs.",
       "category": "skripts",
       "tags": [
         "skript",
@@ -269,9 +269,17 @@
       "coverImage": "",
       "showcaseImages": [],
       "youtubeUrl": "",
-      "fileUrl": "",
+      "fileUrl": "https://drive.google.com/uc?export=download&id=16rG12jYk5CKcUkuMAQUB8n6Aer_h4YRc",
       "currentVersion": "1.0.0",
-      "dependencies": [],
+      "dependencies": [
+        {
+          "name": "Skript",
+          "description": "",
+          "required": true,
+          "url": "",
+          "version": ""
+        }
+      ],
       "updates": [],
       "minecraftVersions": [
         "1.21.1"
@@ -286,14 +294,14 @@
       "supportInfo": "",
       "notices": "",
       "featured": false,
-      "status": "draft",
+      "status": "published",
       "seoTitle": "Stream Skript - Free Minecraft Skript for 1.21.1 | IconBuilds",
       "seoDescription": "Free Minecraft Skript for Paper servers running Minecraft 1.21.1. Announce your stream to all the players! Includes skript, stream, broadcast.",
       "canonicalUrl": "https://minestore.org/resources/stream-skript/",
       "imageAlt": "Stream Skript resource preview",
-      "updatedAt": "2026-07-30T20:50:07.191Z",
+      "updatedAt": "2026-09-04T18:59:26.913Z",
       "createdAt": "2026-07-30T20:50:07.191Z",
-      "publishedAt": "",
+      "publishedAt": "2026-09-04T18:59:26.913Z",
       "averageRating": 0,
       "reviewCount": 0,
       "downloadCount": 0,
@@ -705,6 +713,13 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_62c37b5f-98cf-462c-9baa-ba5c134256b4",
       "createdAt": "2026-09-03T00:23:30.782Z"
+    },
+    {
+      "id": "audit_d9efc283-1f3d-4044-8bdd-693bffd296b5",
+      "type": "save-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_03601fb9-b1a9-445a-a3db-29d485cdd43b",
+      "createdAt": "2026-09-04T18:59:26.913Z"
     }
   ],
   "verificationChallenges": [
