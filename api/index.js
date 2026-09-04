@@ -2079,9 +2079,9 @@ function pageShell(page, title, description, canonical, body, options = {}) {
   <meta name="twitter:title" content="${htmlEscape(title)}">
   <meta name="twitter:description" content="${htmlEscape(description)}">
   <meta name="twitter:image" content="${htmlEscape(image)}">
-  <link rel="stylesheet" href="/assets/css/styles.css?v=summer-orange-20260723">
-  <script src="/config.js?v=summer-orange-20260723" defer></script>
-  <script src="/assets/js/app.js?v=summer-orange-20260723" defer></script>
+  <link rel="stylesheet" href="/assets/css/styles.css?v=image-upload-20260904">
+  <script src="/config.js?v=image-upload-20260904" defer></script>
+  <script src="/assets/js/app.js?v=image-upload-20260904" defer></script>
 </head>
 <body data-page="${page}">${body}</body>
 </html>`;
