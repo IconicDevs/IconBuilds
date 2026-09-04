@@ -909,6 +909,50 @@ img {
   font-size: 1.6rem;
 }
 
+.donation-panel {
+  display: grid;
+  gap: 12px;
+  border-color: rgba(249, 115, 22, .38);
+  background:
+    linear-gradient(135deg, rgba(249, 115, 22, .11), rgba(251, 113, 133, .05)),
+    var(--panel);
+}
+
+.donation-panel h3 {
+  margin: 0 0 6px;
+  font-size: 1.22rem;
+}
+
+.donation-panel .eyebrow {
+  margin-bottom: 6px;
+}
+
+.donation-amount {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(249, 115, 22, .35);
+  border-radius: var(--radius);
+  background: #0f1623;
+}
+
+.donation-amount span {
+  min-width: 40px;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  border-right: 1px solid rgba(148, 163, 184, .18);
+  color: #ffe8bb;
+  font-weight: 950;
+}
+
+.donation-amount .input {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
 .rich-text {
   color: #dbeafe;
 }

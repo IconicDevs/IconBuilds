@@ -687,6 +687,7 @@ function renderResourceDetail(state) {
             <button class="button" data-favorite="${resource.id}">Favorite</button>
           </div>
         </div>
+        ${resource.free ? donationPanel(resource) : ""}
         <div class="panel">
           <h3>Resource details</h3>
           <p class="muted">Version: ${escapeHtml(resource.currentVersion || "1.0.0")}</p>
@@ -698,6 +699,22 @@ function renderResourceDetail(state) {
     </div>
   </section>`);
   bindResourceActions();
+}
+
+function donationPanel(resource) {
+  return `<form class="panel donation-panel" data-donation-form="${escapeHtml(resource.id)}">
+    <div>
+      <p class="eyebrow">Optional</p>
+      <h3>Donate</h3>
+      <p class="muted">Support this free resource with any amount from $1 to $1,000.</p>
+    </div>
+    <label class="donation-amount">
+      <span>$</span>
+      <input class="input" name="amount" type="number" min="1" max="1000" step="0.01" value="5" inputmode="decimal" aria-label="Donation amount">
+    </label>
+    <button class="button primary" type="submit">Donate</button>
+    <p class="field-help">Donating is optional. Downloads stay free.</p>
+  </form>`;
 }
 
 function resourceTab(resource, state, tab, images) {
@@ -833,6 +850,32 @@ function bindResourceActions() {
     } catch (error) {
       if (error.status === 401) location.href = route(`/login/?next=${encodeURIComponent(location.pathname + location.search)}`);
       else toast(error.message);
+    }
+  }));
+  $$("[data-donation-form]").forEach((form) => form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const input = form.elements.amount;
+    const amount = Number.parseFloat(String(input?.value || "").replace(/[$,\s]/g, ""));
+    if (!Number.isFinite(amount) || amount < 1 || amount > 1000) {
+      toast("Donation amount must be between $1 and $1,000.");
+      input?.focus();
+      return;
+    }
+    const button = $("button[type='submit']", form);
+    const previous = button?.textContent || "Donate";
+    if (button) {
+      button.disabled = true;
+      button.textContent = "Opening Stripe...";
+    }
+    try {
+      const result = await request("createDonationCheckout", { resourceId: form.dataset.donationForm, amount });
+      location.href = result.url;
+    } catch (error) {
+      toast(error.message);
+      if (button) {
+        button.disabled = false;
+        button.textContent = previous;
+      }
     }
   }));
   $$("[data-add-free]").forEach((button) => button.addEventListener("click", async () => {
@@ -1252,7 +1295,7 @@ function formatMoney(cents = 0) {
 }
 
 function renderCheckoutSuccess(state) {
-  layout(state, `<section class="section"><div class="panel"><h1 class="section-title">Confirming purchase</h1><p class="section-copy">We are checking Stripe before adding the resource to your library.</p><div id="checkoutStatus" class="notice">Working...</div></div></section>`);
+  layout(state, `<section class="section"><div class="panel"><h1 class="section-title">Confirming checkout</h1><p class="section-copy">We are checking Stripe before updating IconBuilds.</p><div id="checkoutStatus" class="notice">Working...</div></div></section>`);
   const sessionId = new URLSearchParams(location.search).get("session_id");
   if (!sessionId) {
     $("#checkoutStatus").textContent = "Missing checkout session.";
@@ -1260,7 +1303,9 @@ function renderCheckoutSuccess(state) {
   }
   request("checkoutSuccess", { sessionId }).then((result) => {
     $("#checkoutStatus").textContent = result.message || "Purchase confirmed.";
-    window.setTimeout(() => location.href = route("/account/"), 1300);
+    const redirectPath = clean(result.redirectPath || "");
+    const next = redirectPath.startsWith("/") ? redirectPath : "/account/";
+    window.setTimeout(() => location.href = route(next), 1300);
   }).catch((error) => {
     $("#checkoutStatus").textContent = error.message;
   });

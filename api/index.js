@@ -10,6 +10,7 @@ const DB_DEFAULT = {
   resources: [],
   reviews: [],
   purchases: [],
+  donations: [],
   downloads: [],
   library: [],
   favorites: [],
@@ -45,9 +46,28 @@ function stripeTaxCodeForResource(resource = {}) {
   return /^txcd_\d{8}$/.test(taxCode) ? taxCode : "txcd_10202000";
 }
 
+function stripeDonationTaxCode() {
+  const configuredCode = process.env.STRIPE_DONATION_TAX_CODE
+    || CONFIG.stripe?.donationTaxCode
+    || CONFIG.stripe?.productTaxCode
+    || "txcd_10000000";
+  const taxCode = String(configuredCode || "").trim();
+  return /^txcd_\d{8}$/.test(taxCode) ? taxCode : "txcd_10000000";
+}
+
 function stripeManagedPaymentsSetting() {
   const value = String(process.env.STRIPE_MANAGED_PAYMENTS_ENABLED || "").trim().toLowerCase();
   return ["true", "false"].includes(value) ? value : "";
+}
+
+function donationAmountCents(value) {
+  const amount = Number.parseFloat(String(value || "").replace(/[$,\s]/g, ""));
+  if (!Number.isFinite(amount) || amount < 1 || amount > 1000) {
+    const err = new Error("Donation amount must be between $1 and $1,000.");
+    err.status = 400;
+    throw err;
+  }
+  return Math.round(amount * 100);
 }
 
 function send(res, status, payload, headers = {}) {
@@ -225,7 +245,7 @@ function validateOrigin(req, action) {
 
 function rateLimit(req, action) {
   const windowMs = 60 * 1000;
-  const sensitive = new Set(["login", "register", "resendVerification", "changeVerificationEmail", "verifyEmail", "createCheckout", "download"]);
+  const sensitive = new Set(["login", "register", "resendVerification", "changeVerificationEmail", "verifyEmail", "createCheckout", "createDonationCheckout", "download"]);
   const limit = sensitive.has(action) ? 20 : 160;
   const key = `${hashIp(req)}:${action || "default"}`;
   const current = Date.now();
@@ -971,6 +991,8 @@ function stateFor(db, user, options = {}) {
 }
 
 function adminStats(db) {
+  const paidPurchases = db.purchases.filter((item) => item.status === "paid");
+  const paidDonations = db.donations.filter((item) => item.status === "paid");
   return {
     totalUsers: db.users.length,
     verifiedUsers: db.users.filter((item) => item.emailVerified).length,
@@ -979,13 +1001,16 @@ function adminStats(db) {
     publishedResources: db.resources.filter((item) => item.status === "published").length,
     freeResources: db.resources.filter((item) => item.status === "published" && item.free).length,
     paidResources: db.resources.filter((item) => item.status === "published" && !item.free).length,
-    totalPurchases: db.purchases.filter((item) => item.status === "paid").length,
-    revenueCents: db.purchases.filter((item) => item.status === "paid").reduce((sum, item) => sum + Number(item.amountCents || 0), 0),
+    totalPurchases: paidPurchases.length,
+    totalDonations: paidDonations.length,
+    donationRevenueCents: paidDonations.reduce((sum, item) => sum + Number(item.amountCents || 0), 0),
+    revenueCents: [...paidPurchases, ...paidDonations].reduce((sum, item) => sum + Number(item.amountCents || 0), 0),
     totalDownloads: db.downloads.length,
     pendingReviews: db.reviews.filter((item) => item.pending).length,
     reportedReviews: db.reports.filter((item) => item.type === "review" && !item.closed).length,
     recentRegistrations: db.users.slice(-8).map(publicUser),
     recentPurchases: db.purchases.slice(-8),
+    recentDonations: db.donations.slice(-8),
     recentDownloads: db.downloads.slice(-8),
     recentModerationActions: db.auditLogs.slice(-12)
   };
@@ -1371,6 +1396,40 @@ async function handleCreateCheckout(req, res, body) {
   send(res, 200, { url: session.url, id: session.id });
 }
 
+async function handleCreateDonationCheckout(req, res, body) {
+  const { db } = await readStore();
+  const user = await currentUser(req, db);
+  const resource = db.resources.find((item) => item.id === body.resourceId && item.status === "published");
+  if (!resource) return error(res, 404, "Resource not found.");
+  if (!resource.free && Number(resource.priceCents || 0) > 0) return error(res, 400, "Donations are only available on free resources.");
+  if (!process.env.STRIPE_SECRET_KEY) return error(res, 503, "Stripe is not configured yet.");
+  const amountCents = donationAmountCents(body.amount);
+  const checkoutFields = {
+    mode: "payment",
+    submit_type: "donate",
+    success_url: `${CONFIG.site.url}${CONFIG.stripe.successPath}?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${CONFIG.site.url}/resources/${resource.slug}/`,
+    client_reference_id: `${user?.id || "guest"}:${resource.id}:donation`,
+    "line_items[0][quantity]": "1",
+    "line_items[0][price_data][currency]": CONFIG.stripe.currency || "usd",
+    "line_items[0][price_data][unit_amount]": String(amountCents),
+    "line_items[0][price_data][product_data][name]": `Donation for ${resource.name}`,
+    "line_items[0][price_data][product_data][description]": `Optional support donation for ${resource.name} on IconBuilds.`,
+    "line_items[0][price_data][product_data][tax_code]": stripeDonationTaxCode(),
+    "metadata[checkoutType]": "donation",
+    "metadata[userId]": user?.id || "",
+    "metadata[resourceId]": resource.id,
+    "metadata[resourceSlug]": resource.slug || "",
+    "metadata[resourceName]": resource.name
+  };
+  if (user?.email) checkoutFields.customer_email = user.email;
+  if (resource.coverImage) checkoutFields["line_items[0][price_data][product_data][images][0]"] = resource.coverImage;
+  const managedPaymentsEnabled = stripeManagedPaymentsSetting();
+  if (managedPaymentsEnabled) checkoutFields["managed_payments[enabled]"] = managedPaymentsEnabled;
+  const session = await stripeRequest("/v1/checkout/sessions", checkoutFields);
+  send(res, 200, { url: session.url, id: session.id });
+}
+
 async function stripeRequest(pathname, fields, method = "POST") {
   const normalizedMethod = String(method || "POST").toUpperCase();
   const query = new URLSearchParams(fields || {});
@@ -1402,7 +1461,9 @@ async function handleCheckoutSuccess(req, res, body) {
   const sessionId = String(body.sessionId || "");
   if (!sessionId.startsWith("cs_")) return error(res, 400, "Invalid Stripe session.");
   const session = await stripeRequest(`/v1/checkout/sessions/${encodeURIComponent(sessionId)}`, {}, "GET");
-  const result = await grantStripePurchase(session);
+  const result = session.metadata?.checkoutType === "donation"
+    ? await recordStripeDonation(session)
+    : await grantStripePurchase(session);
   send(res, 200, result);
 }
 
@@ -1438,11 +1499,50 @@ async function grantStripePurchase(session) {
   }, "Grant IconBuilds purchase")).result;
 }
 
+async function recordStripeDonation(session) {
+  if (!session || session.payment_status !== "paid") {
+    const err = new Error("Stripe has not confirmed the donation.");
+    err.status = 402;
+    throw err;
+  }
+  const resourceId = session.metadata?.resourceId || "";
+  const userId = session.metadata?.userId || "";
+  return (await withDb(async (db) => {
+    const resource = db.resources.find((item) => item.id === resourceId);
+    const existing = db.donations.find((item) => item.stripeSessionId === session.id);
+    if (!existing) {
+      db.donations.push({
+        id: randomId("don_"),
+        userId,
+        resourceId,
+        resourceName: resource?.name || session.metadata?.resourceName || "IconBuilds resource",
+        stripeSessionId: session.id,
+        amountCents: Number(session.amount_total || 0),
+        currency: session.currency || CONFIG.stripe.currency || "usd",
+        status: "paid",
+        donorEmail: session.customer_details?.email || session.customer_email || "",
+        createdAt: now()
+      });
+      db.auditLogs.push({ id: randomId("audit_"), type: "donation", userId, resourceId, createdAt: now() });
+    }
+    return {
+      ok: true,
+      checkoutType: "donation",
+      message: "Donation confirmed. Thank you for supporting this free resource.",
+      redirectPath: resource?.slug ? `/resources/${resource.slug}/` : "/free/"
+    };
+  }, "Record IconBuilds donation")).result;
+}
+
 async function handleStripeWebhook(req, res, raw) {
   if (!process.env.STRIPE_WEBHOOK_SECRET) return error(res, 503, "Stripe webhook secret is not configured.");
   const signature = req.headers["stripe-signature"] || "";
   const event = verifyStripeEvent(raw, signature);
-  if (event.type === "checkout.session.completed") await grantStripePurchase(event.data.object);
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
+    if (session.metadata?.checkoutType === "donation") await recordStripeDonation(session);
+    else await grantStripePurchase(session);
+  }
   send(res, 200, { received: true });
 }
 
@@ -1945,6 +2045,7 @@ async function handler(req, res) {
     if (action === "changeVerificationEmail") return await handleChangeEmail(req, res, body);
     if (action === "admin") return await handleAdmin(req, res, body);
     if (action === "createCheckout") return await handleCreateCheckout(req, res, body);
+    if (action === "createDonationCheckout") return await handleCreateDonationCheckout(req, res, body);
     if (action === "checkoutSuccess") return await handleCheckoutSuccess(req, res, body);
     if (action === "addFreeResource") return await handleAddFree(req, res, body);
     if (action === "download") return await handleDownload(req, res, body);

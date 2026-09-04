@@ -208,6 +208,7 @@ const IconBuildsConfig = {
     successPath: "/checkout/success/",
     cancelPath: "/resources/",
     productTaxCode: "txcd_10202000",
+    donationTaxCode: "txcd_10000000",
     taxCodesByCategory: {
       builds: "txcd_10505001",
       skripts: "txcd_10202000",
