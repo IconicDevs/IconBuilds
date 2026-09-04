@@ -266,7 +266,7 @@
       "priceCents": 0,
       "currency": "usd",
       "ownershipLabel": "IconRealms Development",
-      "coverImage": "",
+      "coverImage": "https://minestore.org/uploads/images/coverImage/20260904194707-image-2026-09-04-154653964-87b7b9d9.png",
       "showcaseImages": [],
       "youtubeUrl": "",
       "fileUrl": "https://drive.google.com/uc?export=download&id=16rG12jYk5CKcUkuMAQUB8n6Aer_h4YRc",
@@ -288,7 +288,8 @@
         "Paper"
       ],
       "compatibility": [
-        "Java"
+        "Java",
+        "Cross-Play"
       ],
       "installation": "",
       "supportInfo": "",
@@ -299,7 +300,7 @@
       "seoDescription": "Free Minecraft Skript for Paper servers running Minecraft 1.21.1. Announce your stream to all the players! Includes skript, stream, broadcast.",
       "canonicalUrl": "https://minestore.org/resources/stream-skript/",
       "imageAlt": "Stream Skript resource preview",
-      "updatedAt": "2026-09-04T18:59:26.913Z",
+      "updatedAt": "2026-09-04T19:47:18.224Z",
       "createdAt": "2026-07-30T20:50:07.191Z",
       "publishedAt": "2026-09-04T18:59:26.913Z",
       "averageRating": 0,
@@ -395,8 +396,10 @@
       "priceCents": 99,
       "currency": "usd",
       "ownershipLabel": "IconRealms",
-      "coverImage": "",
-      "showcaseImages": [],
+      "coverImage": "https://minestore.org/uploads/images/coverImage/20260904194147-image-2026-09-04-154129610-572b2474.png",
+      "showcaseImages": [
+        "https://minestore.org/uploads/images/showcaseImages/20260904194242-image-2026-09-04-154222272-f414a063.png"
+      ],
       "youtubeUrl": "",
       "fileUrl": "https://drive.google.com/uc?export=download&id=1wTausAjGWfRz8pZgAA2tfT0IKJEnt6gx",
       "currentVersion": "1.0.0",
@@ -475,7 +478,7 @@
       "seoDescription": "Premium Minecraft build for Paper, Spigot, Bukkit servers. A fully featured Punishment GUI Skript powered by Skript, SkQuery, SkBee, and LiteBans. Includes.",
       "canonicalUrl": "https://minestore.org/resources/punishmentgui/",
       "imageAlt": "PunishmentGUI resource preview",
-      "updatedAt": "2026-09-04T19:36:32.490Z",
+      "updatedAt": "2026-09-04T19:42:46.902Z",
       "createdAt": "2026-09-04T19:36:32.490Z",
       "publishedAt": "",
       "averageRating": 0,
@@ -831,6 +834,20 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_7c513abe-0462-4fba-8dc3-54220312f48b",
       "createdAt": "2026-09-04T19:36:32.490Z"
+    },
+    {
+      "id": "audit_a7f69585-40ef-4f59-9caa-89342ebeb0b8",
+      "type": "save-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_7c513abe-0462-4fba-8dc3-54220312f48b",
+      "createdAt": "2026-09-04T19:42:46.902Z"
+    },
+    {
+      "id": "audit_a11d8387-5ae4-4b53-a3cf-fe2d5711e7cf",
+      "type": "save-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_03601fb9-b1a9-445a-a3db-29d485cdd43b",
+      "createdAt": "2026-09-04T19:47:18.224Z"
     }
   ],
   "verificationChallenges": [
