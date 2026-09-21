@@ -485,6 +485,50 @@
       "reviewCount": 0,
       "downloadCount": 0,
       "purchaseCount": 0
+    },
+    {
+      "id": "res_9d721549-1b60-4d88-a7e8-a5f35d3eec17",
+      "name": "TerraWorld",
+      "slug": "terraworld",
+      "shortDescription": "TerraWorld — massive custom generation for a Better End, Nether, and overworld.",
+      "description": "# TerraWorld 2.0\n\n**TerraWorld** is a standalone world-generation overhaul for Paper servers that completely transforms the **Overworld, Nether, and End** with custom terrain, biomes, caves, structures, vegetation, and more.\n\nInstead of relying on multiple separate plugins or datapacks, TerraWorld bundles its generation engine and world packs into one complete package. Install it, generate a fresh world, and all three vanilla dimensions are replaced with dramatically expanded versions of themselves.\n\n## Three Dimensions. Completely Reimagined.\n\n### Overworld\n\nExplore massive, naturally blended regions powered by TerraWorld.\n\nExpect towering mountain ranges, sprawling landscapes, enhanced caves, custom vegetation, varied terrain palettes, ores, structures, and biome transitions designed to make exploration feel fresh again.\n\n### Nether\n\nThe Nether is rebuilt using Tartarus As a fork, introducing significantly more varied terrain and biome generation while still retaining normal Minecraft Nether features and structures.\n\nTravel through enormous caverns, hostile volcanic landscapes, and redesigned environments that make the Nether feel like an actual dimension rather than a collection of repeating biomes.\n\n### The End\n\nThe End receives a complete overhaul through a fork of BetterEND, an abandoned project.\n\nDiscover custom floating terrain, expanded biome layouts, vegetation, structures, unusual island formations, and environments extending far beyond the traditional End islands.\n\nThe End is no longer just somewhere you visit for the dragon — it becomes a dimension worth exploring.\n\n## Built as One Complete Plugin\n\nTerraWorld handles generation for the normal `world`, `world_nether`, and `world_the_end` dimensions directly.\n\n## Custom Generation Without Losing Vanilla\n\nTerraWorld expands Minecraft's world generation while keeping important vanilla functionality intact.\n\nVanilla structures, biome behavior, weather, mob rules, and dimension-specific features can still work alongside TerraWorld's custom terrain systems.\n\nExisting chunks remain unchanged, while newly generated worlds and chunks use TerraWorld's generation.\n\n## Compatibility\n\nTerraWorld provides separate builds for modern Paper versions:\n\n**Paper 1.21.x**\nJava 21\n\n**Paper 26.x**\nJava 25 where required by Paper\n\nEach version includes compatibility handling for Minecraft's changing internal block and generator systems.\n\n## Commands\n\n`/terraworld info`\nView TerraWorld's installed generation content and see which generator each loaded world is currently using.\n\n`/terraworld setup`\nReapply TerraWorld's generator configuration to `bukkit.yml`.\n\n`/terraworld reload`\nReload embedded Terra pack configuration.\n\n`/terraworld locate`\nlocate all terraworld structures.\n\nAliases are available through `/tw`.\n\n## Perfect For\n\nTerraWorld is designed for servers that want:\n\n* Fully custom world generation\n* Large-scale survival worlds\n* SMP servers\n* Exploration-focused gameplay\n* Custom biome systems\n* More interesting Nether exploration\n* A completely redesigned End\n* Improved terrain without managing several generation plugins\n\nWhether you're building a survival network, an adventure server, or simply want Minecraft's dimensions to feel new again.\n\nNote: All of this has been forked from abandoned projects, and will be updated to newer versions of minecraft, and will also have updates like more biomes.\n",
+      "category": "plugins",
+      "tags": [
+        "World-generation",
+        "SMP",
+        "RPG",
+        "adventure"
+      ],
+      "free": false,
+      "priceCents": 499,
+      "currency": "usd",
+      "ownershipLabel": "IconRealms",
+      "coverImage": "",
+      "showcaseImages": [],
+      "youtubeUrl": "",
+      "fileUrl": "",
+      "currentVersion": "1.0.0",
+      "dependencies": [],
+      "updates": [],
+      "minecraftVersions": [],
+      "serverSoftware": [],
+      "compatibility": [],
+      "installation": "",
+      "supportInfo": "",
+      "notices": "",
+      "featured": true,
+      "status": "draft",
+      "seoTitle": "TerraWorld - Premium Minecraft Plugin | IconBuilds",
+      "seoDescription": "Premium Minecraft plugin. TerraWorld — massive custom generation for a Better End, Nether, and overworld. Includes World-generation, SMP, RPG, adventure.",
+      "canonicalUrl": "https://minestore.org/resources/terraworld/",
+      "imageAlt": "TerraWorld resource preview",
+      "updatedAt": "2026-09-21T01:50:20.728Z",
+      "createdAt": "2026-09-21T01:50:20.728Z",
+      "publishedAt": "",
+      "averageRating": 0,
+      "reviewCount": 0,
+      "downloadCount": 0,
+      "purchaseCount": 0
     }
   ],
   "reviews": [],
@@ -855,6 +899,13 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_7c513abe-0462-4fba-8dc3-54220312f48b",
       "createdAt": "2026-09-04T21:13:55.398Z"
+    },
+    {
+      "id": "audit_ff5ef89f-c533-4e9a-8a0a-653a641bd0e2",
+      "type": "save-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_9d721549-1b60-4d88-a7e8-a5f35d3eec17",
+      "createdAt": "2026-09-21T01:50:20.728Z"
     }
   ],
   "verificationChallenges": [
