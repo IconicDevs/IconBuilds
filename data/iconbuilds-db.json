@@ -906,6 +906,13 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_9d721549-1b60-4d88-a7e8-a5f35d3eec17",
       "createdAt": "2026-09-21T01:50:20.728Z"
+    },
+    {
+      "id": "audit_b17c451c-cb42-4abc-ac3c-90263d222aef",
+      "type": "add-free-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
+      "createdAt": "2026-11-09T22:37:06.418Z"
     }
   ],
   "verificationChallenges": [
