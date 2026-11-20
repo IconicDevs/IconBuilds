@@ -401,13 +401,13 @@
       "slug": "punishmentgui",
       "shortDescription": "A fully featured Punishment GUI Skript powered by Skript, SkQuery, SkBee, and LiteBans",
       "description": "Punishment GUI Skript – The all-in-one moderation solution for Minecraft servers.\nBuilt using Skript, SkQuery, SkBee, and LiteBans, this system provides staff with a sleek, intuitive graphical interface for managing punishments efficiently.\n\n\nIt comes fully loaded with a wide range of predefined offenses, each featuring escalating punishment tiers that persist across sessions. Color-coded indicators make it easy to see a player’s offense history at a glance, ensuring fair and consistent enforcement.\n\n\nVulcan integration takes moderation to the next level by providing alt detection, detailed punishment history, and comprehensive logs, giving staff all the information they need before issuing a punishment. Combined with LiteBans’ powerful banning system, every action is recorded, synchronized, and enforceable across your server network.\nDo not redistribute this Skript under any circumstances.\nDo not claim credit for any part of this Skript.\nYou are free to modify it for your personal use.\nI don’t expect public credit, but I do expect you not to claim it as your own.",
-      "category": "builds",
+      "category": "skripts",
       "tags": [
         "Skript",
         "Moderation"
       ],
       "free": false,
-      "priceCents": 99,
+      "priceCents": 199,
       "currency": "usd",
       "ownershipLabel": "IconRealms",
       "coverImage": "https://minestore.org/uploads/images/coverImage/20260904194147-image-2026-09-04-154129610-572b2474.png",
@@ -488,11 +488,11 @@
       "notices": "",
       "featured": false,
       "status": "published",
-      "seoTitle": "PunishmentGUI - Premium Minecraft Build | IconBuilds",
-      "seoDescription": "Premium Minecraft build for Paper, Spigot, Bukkit servers. A fully featured Punishment GUI Skript powered by Skript, SkQuery, SkBee, and LiteBans. Includes.",
+      "seoTitle": "PunishmentGUI - Premium Minecraft Skript | IconBuilds",
+      "seoDescription": "Premium Minecraft Skript for Paper, Spigot, Bukkit servers. A fully featured Punishment GUI Skript powered by Skript, SkQuery, SkBee, and LiteBans. Includes.",
       "canonicalUrl": "https://minestore.org/resources/punishmentgui/",
       "imageAlt": "PunishmentGUI resource preview",
-      "updatedAt": "2026-09-04T21:13:55.398Z",
+      "updatedAt": "2026-11-20T01:50:55.233Z",
       "createdAt": "2026-09-04T19:36:32.490Z",
       "publishedAt": "2026-09-04T21:13:55.398Z",
       "averageRating": 0,
@@ -1167,6 +1167,13 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_29ef1bb6-d9b4-4d8f-9acc-75c72f6d8774",
       "createdAt": "2026-11-20T01:46:41.303Z"
+    },
+    {
+      "id": "audit_5a81a062-6fc6-4be1-bd0f-deb486b92026",
+      "type": "save-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_7c513abe-0462-4fba-8dc3-54220312f48b",
+      "createdAt": "2026-11-20T01:50:55.233Z"
     }
   ],
   "verificationChallenges": [
