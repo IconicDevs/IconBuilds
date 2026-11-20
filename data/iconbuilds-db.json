@@ -499,8 +499,8 @@
         "RPG",
         "adventure"
       ],
-      "free": false,
-      "priceCents": 499,
+      "free": true,
+      "priceCents": 0,
       "currency": "usd",
       "ownershipLabel": "IconRealms",
       "coverImage": "",
@@ -518,11 +518,11 @@
       "notices": "",
       "featured": true,
       "status": "draft",
-      "seoTitle": "TerraWorld - Premium Minecraft Plugin | IconBuilds",
-      "seoDescription": "Premium Minecraft plugin. TerraWorld — massive custom generation for a Better End, Nether, and overworld. Includes World-generation, SMP, RPG, adventure.",
+      "seoTitle": "TerraWorld - Free Minecraft Plugin | IconBuilds",
+      "seoDescription": "Free Minecraft plugin. TerraWorld — massive custom generation for a Better End, Nether, and overworld. Includes World-generation, SMP, RPG, adventure.",
       "canonicalUrl": "https://minestore.org/resources/terraworld/",
       "imageAlt": "TerraWorld resource preview",
-      "updatedAt": "2026-09-21T01:50:20.728Z",
+      "updatedAt": "2026-11-20T01:16:48.267Z",
       "createdAt": "2026-09-21T01:50:20.728Z",
       "publishedAt": "",
       "averageRating": 0,
@@ -920,6 +920,13 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
       "createdAt": "2026-11-09T22:37:06.418Z"
+    },
+    {
+      "id": "audit_500a06b7-6235-4e52-a78e-1322a25aaeea",
+      "type": "save-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_9d721549-1b60-4d88-a7e8-a5f35d3eec17",
+      "createdAt": "2026-11-20T01:16:48.267Z"
     }
   ],
   "verificationChallenges": [
