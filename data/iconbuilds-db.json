@@ -620,6 +620,66 @@
       "reviewCount": 0,
       "downloadCount": 0,
       "purchaseCount": 0
+    },
+    {
+      "id": "res_beb42394-6644-4e88-8e2b-a4c7f608d6fb",
+      "name": "IconBillboard",
+      "slug": "icon-billboard",
+      "shortDescription": "IconBillboard is a Paper plugin that allows server owners to create interactive, map-based billboards for displaying advertisements, images, animations, and video content directly in Minecraft.",
+      "description": "# IconBillboard\n\nIconBillboard is a Paper plugin that allows server owners to create interactive, map-based billboards for displaying advertisements, images, animations, and video content directly in Minecraft.\n\nDesigned for server lobbies, networks, and community spaces, IconBillboard provides a flexible advertising system with support for rotating media, clickable interactions, live streams, and audio playback.\n\n## Features\n\n- **Dynamic Billboards** — Create custom billboard displays using item frames and maps.\n- **Image Support** — Display images directly on in-game billboard displays.\n- **GIF Support** — Animate media directly within your billboards.\n- **Video Support** — Display MP4 and other supported video media.\n- **Live Streams** — Support for Twitch streams and direct HLS streams.\n- **Automatic Media Rotation** — Cycle through multiple advertisements on a configurable schedule.\n- **Interactive Billboards** — Allow players to click displays to trigger commands or view additional information.\n- **Clickable Links** — Provide clickable URLs through billboard interaction.\n- **Audio Support** — Extract and play audio from supported media using custom Minecraft sounds and resource packs.\n- **Local & Remote Media** — Load media from local files or supported URLs.\n- **Configurable Displays** — Customize billboard behavior, media duration, cycling, and interactions.\n- **Easy Management** — Create, edit, manage, and remove billboards through simple commands.\n\n## Commands\n\n| Command | Description |\n|---|---|\n| `/ib wand` | Obtain the billboard selection wand. |\n| `/ib create <name>` | Create a billboard using selected positions. |\n| `/ib addmedia <board> <file-or-url>` | Add media to a billboard. |\n| `/ib show <board> <index>` | Display a specific media item. |\n| `/ib cycle <board> <on/off>` | Toggle automatic media cycling. |\n| `/ib click <board> <action>` | Configure billboard interactions. |\n| `/ib setinfo <board> <text>` | Set the information displayed when clicked. |\n| `/ib removemedia <board> <index>` | Remove a media item. |\n| `/ib delete <board>` | Delete a billboard. |\n| `/ib list` | View existing billboards. |\n| `/ib reload` | Reload the plugin configuration. |\n\n## Requirements\n\n- Paper\n- FFmpeg *(for video, stream, and audio processing)*\n- yt-dlp or Streamlink *(for supported stream resolution; can be automatically downloaded on supported systems)*\n\nIconBillboard is ideal for server advertisements, partner promotions, announcements, storefront displays, community showcases, and interactive lobby environments.\n\nUsed by **PulsedMC** at `play.pulsedmc.net`.",
+      "category": "plugins",
+      "tags": [
+        "hub",
+        "billboard",
+        "advertising"
+      ],
+      "free": true,
+      "priceCents": 0,
+      "currency": "usd",
+      "ownershipLabel": "IconRealms",
+      "coverImage": "",
+      "showcaseImages": [],
+      "youtubeUrl": "",
+      "fileUrl": "https://drive.google.com/uc?export=download&id=1LgLY9OpaTqzxrbR6zB-9LZDONAAtAqF1",
+      "currentVersion": "1.0.0",
+      "dependencies": [],
+      "updates": [],
+      "minecraftVersions": [
+        "26.1.2",
+        "26.1.1",
+        "26.1",
+        "1.21.9",
+        "1.21.8",
+        "1.21.7",
+        "1.21.5",
+        "1.21.3",
+        "1.21.2",
+        "1.21.1",
+        "1.21"
+      ],
+      "serverSoftware": [
+        "Paper"
+      ],
+      "compatibility": [
+        "Java",
+        "Cross-Play"
+      ],
+      "installation": "",
+      "supportInfo": "",
+      "notices": "",
+      "featured": true,
+      "status": "published",
+      "seoTitle": "IconBillboard - Free Minecraft Plugin for 26.1.2, 26.1.1 | IconBuilds",
+      "seoDescription": "Free Minecraft plugin for Paper servers running Minecraft 26.1.2, 26.1.1, 26.1. IconBillboard is a Paper plugin that allows server owners to create.",
+      "canonicalUrl": "https://minestore.org/resources/icon-billboard/",
+      "imageAlt": "IconBillboard resource preview",
+      "updatedAt": "2026-11-20T01:44:01.916Z",
+      "createdAt": "2026-11-20T01:44:01.916Z",
+      "publishedAt": "2026-11-20T01:44:01.916Z",
+      "averageRating": 0,
+      "reviewCount": 0,
+      "downloadCount": 0,
+      "purchaseCount": 0
     }
   ],
   "reviews": [],
@@ -1065,6 +1125,13 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_29ef1bb6-d9b4-4d8f-9acc-75c72f6d8774",
       "createdAt": "2026-11-20T01:34:34.143Z"
+    },
+    {
+      "id": "audit_ab6a4274-9ab3-4d61-9278-cfb4323fc217",
+      "type": "save-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_beb42394-6644-4e88-8e2b-a4c7f608d6fb",
+      "createdAt": "2026-11-20T01:44:01.916Z"
     }
   ],
   "verificationChallenges": [
