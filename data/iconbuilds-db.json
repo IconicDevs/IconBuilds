@@ -613,7 +613,7 @@
       "seoDescription": "Free Minecraft plugin for Paper servers running Minecraft 26.1.2, 26.1.1, 26.1. BoopArena is a standalone Minecraft arena minigame centered around.",
       "canonicalUrl": "https://minestore.org/resources/boop-arena/",
       "imageAlt": "Boop Arena resource preview",
-      "updatedAt": "2026-11-20T01:46:39.976Z",
+      "updatedAt": "2026-11-20T01:46:41.303Z",
       "createdAt": "2026-11-20T01:34:34.142Z",
       "publishedAt": "2026-11-20T01:34:34.142Z",
       "averageRating": 0,
@@ -1160,6 +1160,13 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_29ef1bb6-d9b4-4d8f-9acc-75c72f6d8774",
       "createdAt": "2026-11-20T01:46:39.976Z"
+    },
+    {
+      "id": "audit_33c2c169-48ad-48c2-8155-7f1fb4b8e0c0",
+      "type": "save-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_29ef1bb6-d9b4-4d8f-9acc-75c72f6d8774",
+      "createdAt": "2026-11-20T01:46:41.303Z"
     }
   ],
   "verificationChallenges": [
