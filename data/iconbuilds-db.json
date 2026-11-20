@@ -673,7 +673,7 @@
       "seoDescription": "Free Minecraft plugin for Paper servers running Minecraft 26.1.2, 26.1.1, 26.1. IconBillboard is a Paper plugin that allows server owners to create.",
       "canonicalUrl": "https://minestore.org/resources/icon-billboard/",
       "imageAlt": "IconBillboard resource preview",
-      "updatedAt": "2026-11-20T01:45:25.217Z",
+      "updatedAt": "2026-11-20T01:45:26.887Z",
       "createdAt": "2026-11-20T01:44:01.916Z",
       "publishedAt": "2026-11-20T01:44:01.916Z",
       "averageRating": 0,
@@ -1139,6 +1139,13 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_beb42394-6644-4e88-8e2b-a4c7f608d6fb",
       "createdAt": "2026-11-20T01:45:25.217Z"
+    },
+    {
+      "id": "audit_cafaec5c-64c5-47b9-8ea8-4765ff841411",
+      "type": "save-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_beb42394-6644-4e88-8e2b-a4c7f608d6fb",
+      "createdAt": "2026-11-20T01:45:26.887Z"
     }
   ],
   "verificationChallenges": [
