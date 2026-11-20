@@ -46,6 +46,20 @@
       "avatarUrl": "",
       "createdAt": "2026-07-26T10:53:49.058Z",
       "updatedAt": "2026-07-26T10:53:49.058Z"
+    },
+    {
+      "id": "usr_480e4edf-c1c6-4636-ad67-59e575aa1f73",
+      "username": "bloodshadow___",
+      "email": "outsidermasdogg@gmail.com",
+      "passwordHash": "701432b7e74709a8925df081ca0095f0:5049c5e3856fa602e7d23b1e91b018fad6b98b7179c1df8024902e9329695877ebf2e4048a858aff0c8bdd9d954f3db0a37cbf9365dcade2b8924736b6c582a9",
+      "role": "user",
+      "roles": [],
+      "emailVerified": false,
+      "emailOptIn": true,
+      "googleId": "",
+      "avatarUrl": "",
+      "createdAt": "2026-11-20T01:18:58.745Z",
+      "updatedAt": "2026-11-20T01:18:58.745Z"
     }
   ],
   "resources": [
@@ -927,6 +941,12 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_9d721549-1b60-4d88-a7e8-a5f35d3eec17",
       "createdAt": "2026-11-20T01:16:48.267Z"
+    },
+    {
+      "id": "audit_fa4a4a9d-19ce-46c7-bfb0-71e5b17936b1",
+      "type": "register",
+      "userId": "usr_480e4edf-c1c6-4636-ad67-59e575aa1f73",
+      "createdAt": "2026-11-20T01:18:58.881Z"
     }
   ],
   "verificationChallenges": [
@@ -958,6 +978,16 @@
       "createdAt": "2026-07-26T10:53:49.119Z",
       "expiresAt": "2026-07-26T11:23:49.119Z",
       "lastSentAt": "2026-07-26T10:53:49.119Z",
+      "usedAt": ""
+    },
+    {
+      "id": "ver_3060c1d2-da75-4287-affa-026ccea658b1",
+      "userId": "usr_480e4edf-c1c6-4636-ad67-59e575aa1f73",
+      "email": "outsidermasdogg@gmail.com",
+      "codeHash": "b6352570fa26779521e8fc0f6ffe7311:48f83fbb1608496d3a1d158f2cb8682eb5084ea8227237851926062ece21b5f4a185168e64d54f490484de7a2b7170c66cc895b3a4232f879b0cd82d0d478064",
+      "createdAt": "2026-11-20T01:18:58.815Z",
+      "expiresAt": "2026-11-20T01:48:58.816Z",
+      "lastSentAt": "2026-11-20T01:18:58.816Z",
       "usedAt": ""
     }
   ],
