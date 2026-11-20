@@ -492,7 +492,7 @@
       "seoDescription": "Premium Minecraft Skript for Paper, Spigot, Bukkit servers. A fully featured Punishment GUI Skript powered by Skript, SkQuery, SkBee, and LiteBans. Includes.",
       "canonicalUrl": "https://minestore.org/resources/punishmentgui/",
       "imageAlt": "PunishmentGUI resource preview",
-      "updatedAt": "2026-11-20T01:50:55.233Z",
+      "updatedAt": "2026-11-20T01:50:56.466Z",
       "createdAt": "2026-09-04T19:36:32.490Z",
       "publishedAt": "2026-09-04T21:13:55.398Z",
       "averageRating": 0,
@@ -1174,6 +1174,13 @@
       "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
       "resourceId": "res_7c513abe-0462-4fba-8dc3-54220312f48b",
       "createdAt": "2026-11-20T01:50:55.233Z"
+    },
+    {
+      "id": "audit_f5d4a68e-1436-4e68-bf0b-863315ba7ba7",
+      "type": "save-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_7c513abe-0462-4fba-8dc3-54220312f48b",
+      "createdAt": "2026-11-20T01:50:56.466Z"
     }
   ],
   "verificationChallenges": [
