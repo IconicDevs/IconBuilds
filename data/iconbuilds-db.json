@@ -543,6 +543,83 @@
       "reviewCount": 0,
       "downloadCount": 0,
       "purchaseCount": 0
+    },
+    {
+      "id": "res_29ef1bb6-d9b4-4d8f-9acc-75c72f6d8774",
+      "name": "Boop Arena",
+      "slug": "boop-arena",
+      "shortDescription": "BoopArena is a standalone Minecraft arena minigame centered around knockback-based combat.",
+      "description": "# BoopArena\n\nBoopArena is a standalone Minecraft arena minigame centered around knockback-based combat, randomized abilities, and player scoring. Players compete to knock opponents out of a designated arena while maintaining their own position.\n\nThe plugin provides configurable arena management, player statistics, ability controls, and PlaceholderAPI integration, making it suitable for standalone servers and larger minigame networks.\n\n## Features\n\n- **Ability System:** Nine unique abilities, including Dash, Teleport, Sonic Boom, Pull, Anchor, Wall, Ghost, Speed Boost, and Swap.\n- **Randomized Abilities:** Players receive a randomly selected enabled ability upon entering the arena.\n- **Knockback-Based Combat:** Boop sword hits use configurable minimal damage while preserving knockback mechanics.\n- **Scoring System:** Players earn points for knocking opponents out of the arena.\n- **Arena Time Tracking:** Tracks how long players remain in the arena.\n- **Persistent Statistics:** Saves player points and personal best times across server restarts.\n- **WorldGuard Integration:** Uses a configurable WorldGuard region to determine arena boundaries and player entry.\n- **Configurable Abilities:** Individual abilities can be enabled or disabled through the configuration file.\n- **Custom Return Location:** Provides players with a return prompt following elimination.\n- **PlaceholderAPI Integration:** Supports displaying player statistics and leaderboard information in compatible plugins.\n- **Plugin Lifecycle Support:** Handles cleanup of timers, arena state, temporary items, and registered expansions when disabled.\n- **Standalone Operation:** Does not require HostCore, proxy integrations, or network-specific functionality.\n\n## Requirements\n\n- Paper or Spigot\n- WorldGuard\n- PlaceholderAPI *(optional)*\n\n## Installation\n\n1. Download the BoopArena plugin jar.\n2. Place it into your server's `plugins` directory.\n3. Ensure WorldGuard is installed.\n4. Start your server to generate the configuration.\n5. Configure your arena region and return location.\n6. Restart your server or run `/boop reload`.\n\n## Configuration\n\nBoopArena provides configuration options for:\n\n- Arena region name\n- Return teleport location\n- Ability availability\n- Placeholder compatibility\n- Other gameplay settings\n\n## PlaceholderAPI\n\nBoopArena provides placeholders for arena statistics, including current arena time, personal best time, points, and leaderboard information.\n\nAdditional compatibility aliases are available for existing HostCore placeholder names.\n\n## Commands\n\n`/boop reload` — Reloads the plugin configuration.\n\n`/boop return` — Returns an eliminated player to the configured location.\n\n---\n\nBoopArena is designed to provide a straightforward, configurable arena experience with minimal setup and support for existing server plugins.\n",
+      "category": "plugins",
+      "tags": [
+        "Booparena",
+        "Hub",
+        "Hosting",
+        "Minigames"
+      ],
+      "free": false,
+      "priceCents": 199,
+      "currency": "usd",
+      "ownershipLabel": "IconRealms",
+      "coverImage": "",
+      "showcaseImages": [],
+      "youtubeUrl": "",
+      "fileUrl": "https://drive.google.com/uc?export=download&id=1Ru0HPv0U93onV3a3y45YvXW9ke2M0GO4",
+      "currentVersion": "1.0.0",
+      "dependencies": [
+        {
+          "name": "WorldGuard",
+          "description": "",
+          "required": true,
+          "url": "",
+          "version": ""
+        },
+        {
+          "name": "WorldEdit",
+          "description": "",
+          "required": true,
+          "url": "",
+          "version": ""
+        }
+      ],
+      "updates": [],
+      "minecraftVersions": [
+        "26.1.2",
+        "26.1.1",
+        "26.1",
+        "1.21.9",
+        "1.21.8",
+        "1.21.7",
+        "1.21.6",
+        "1.21.5",
+        "1.21.3",
+        "1.21.2",
+        "1.21.1",
+        "1.21"
+      ],
+      "serverSoftware": [
+        "Paper"
+      ],
+      "compatibility": [
+        "Java",
+        "Cross-Play"
+      ],
+      "installation": "",
+      "supportInfo": "",
+      "notices": "",
+      "featured": false,
+      "status": "published",
+      "seoTitle": "Boop Arena - Premium Minecraft Plugin for 26.1.2, 26.1.1 | IconBuilds",
+      "seoDescription": "Premium Minecraft plugin for Paper servers running Minecraft 26.1.2, 26.1.1, 26.1. BoopArena is a standalone Minecraft arena minigame centered around.",
+      "canonicalUrl": "https://minestore.org/resources/boop-arena/",
+      "imageAlt": "Boop Arena resource preview",
+      "updatedAt": "2026-11-20T01:34:34.142Z",
+      "createdAt": "2026-11-20T01:34:34.142Z",
+      "publishedAt": "2026-11-20T01:34:34.142Z",
+      "averageRating": 0,
+      "reviewCount": 0,
+      "downloadCount": 0,
+      "purchaseCount": 0
     }
   ],
   "reviews": [],
@@ -981,6 +1058,13 @@
       "userId": "usr_480e4edf-c1c6-4636-ad67-59e575aa1f73",
       "resourceId": "res_8aef1be6-9d72-44b9-b7cf-5db2645f00c3",
       "createdAt": "2026-11-20T01:19:32.189Z"
+    },
+    {
+      "id": "audit_165abd1c-5fc5-430d-b466-2afc2107f746",
+      "type": "save-resource",
+      "userId": "usr_144da655-52d4-4b7a-9867-93572e269de2",
+      "resourceId": "res_29ef1bb6-d9b4-4d8f-9acc-75c72f6d8774",
+      "createdAt": "2026-11-20T01:34:34.143Z"
     }
   ],
   "verificationChallenges": [
