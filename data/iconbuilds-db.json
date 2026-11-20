@@ -54,12 +54,12 @@
       "passwordHash": "701432b7e74709a8925df081ca0095f0:5049c5e3856fa602e7d23b1e91b018fad6b98b7179c1df8024902e9329695877ebf2e4048a858aff0c8bdd9d954f3db0a37cbf9365dcade2b8924736b6c582a9",
       "role": "user",
       "roles": [],
-      "emailVerified": false,
+      "emailVerified": true,
       "emailOptIn": true,
       "googleId": "",
       "avatarUrl": "",
       "createdAt": "2026-11-20T01:18:58.745Z",
-      "updatedAt": "2026-11-20T01:18:58.745Z"
+      "updatedAt": "2026-11-20T01:19:17.723Z"
     }
   ],
   "resources": [
@@ -947,6 +947,12 @@
       "type": "register",
       "userId": "usr_480e4edf-c1c6-4636-ad67-59e575aa1f73",
       "createdAt": "2026-11-20T01:18:58.881Z"
+    },
+    {
+      "id": "audit_e2ab7919-1d4c-4fd8-a580-361fc182da4d",
+      "type": "verify-email",
+      "userId": "usr_480e4edf-c1c6-4636-ad67-59e575aa1f73",
+      "createdAt": "2026-11-20T01:19:17.723Z"
     }
   ],
   "verificationChallenges": [
@@ -988,7 +994,7 @@
       "createdAt": "2026-11-20T01:18:58.815Z",
       "expiresAt": "2026-11-20T01:48:58.816Z",
       "lastSentAt": "2026-11-20T01:18:58.816Z",
-      "usedAt": ""
+      "usedAt": "2026-11-20T01:19:17.723Z"
     }
   ],
   "passwordResets": []
